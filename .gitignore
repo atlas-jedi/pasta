@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Environment variables
+.env
+
+# Uploads directory content (keep the directory itself)
+uploads/*
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# SSL certificates (for development only)
+# cert.pem
+# key.pem 

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Calculadora de Horas{% endblock %}
+
+{% block header_title %}Calculadora de Horas{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<!-- Abas para diferentes operações -->
+<ul class="nav nav-tabs mb-4" id="calculatorTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button 
+      class="nav-link {% if not calculation_type or calculation_type == 'add_subtract' %}active{% endif %}" 
+      id="add-subtract-tab" 
+      data-bs-toggle="tab" 
+      data-bs-target="#add-subtract" 
+      type="button" 
+      role="tab" 
+      aria-controls="add-subtract" 
+      aria-selected="{% if not calculation_type or calculation_type == 'add_subtract' %}true{% else %}false{% endif %}"
+    >
+      <i class="bi bi-plus-slash-minus"></i> Adicionar/Subtrair
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button 
+      class="nav-link {% if calculation_type == 'difference' %}active{% endif %}" 
+      id="difference-tab" 
+      data-bs-toggle="tab" 
+      data-bs-target="#difference" 
+      type="button" 
+      role="tab" 
+      aria-controls="difference" 
+      aria-selected="{% if calculation_type == 'difference' %}true{% else %}false{% endif %}"
+    >
+      <i class="bi bi-arrows-angle-expand"></i> Diferença
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content" id="calculatorTabsContent">
+  <!-- Aba de Adicionar/Subtrair -->
+  <div 
+    class="tab-pane fade {% if not calculation_type or calculation_type == 'add_subtract' %}show active{% endif %}" 
+    id="add-subtract" 
+    role="tabpanel" 
+    aria-labelledby="add-subtract-tab"
+  >
+    <form method="post" action="{{ url_for('time_calculator.calculate_time') }}">
+      <input type="hidden" name="calculation_type" value="add_subtract">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="start_time" class="form-label">Horário Inicial</label>
+          <input 
+            type="time" 
+            class="form-control" 
+            id="start_time" 
+            name="start_time" 
+            value="{{ start_time or '' }}" 
+            required
+          >
+        </div>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Operação</label>
+          <div class="d-flex">
+            <div class="form-check me-4">
+              <input 
+                class="form-check-input" 
+                type="radio" 
+                name="operation" 
+                id="add" 
+                value="add" 
+                {% if operation != 'subtract' %}checked{% endif %}
+              >
+              <label class="form-check-label" for="add">
+                <i class="bi bi-plus-circle"></i> Adicionar
+              </label>
+            </div>
+            <div class="form-check">
+              <input 
+                class="form-check-input" 
+                type="radio" 
+                name="operation" 
+                id="subtract" 
+                value="subtract"
+                {% if operation == 'subtract' %}checked{% endif %}
+              >
+              <label class="form-check-label" for="subtract">
+                <i class="bi bi-dash-circle"></i> Subtrair
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-3">
+          <label for="hours" class="form-label">Horas</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            id="hours" 
+            name="hours" 
+            min="0" 
+            value="{{ hours or 0 }}"
+          >
+        </div>
+        <div class="col-md-3">
+          <label for="minutes" class="form-label">Minutos</label>
+          <input 
+            type="number" 
+            class="form-control" 
+            id="minutes" 
+            name="minutes" 
+            min="0" 
+            max="59" 
+            value="{{ minutes or 0 }}"
+          >
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-calculator"></i> Calcular
+      </button>
+    </form>
+  </div>
+  
+  <!-- Aba de Diferença -->
+  <div 
+    class="tab-pane fade {% if calculation_type == 'difference' %}show active{% endif %}" 
+    id="difference" 
+    role="tabpanel" 
+    aria-labelledby="difference-tab"
+  >
+    <form method="post" action="{{ url_for('time_calculator.calculate_time_difference') }}">
+      <input type="hidden" name="calculation_type" value="difference">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="start_time_diff" class="form-label">Horário Inicial</label>
+          <input 
+            type="time" 
+            class="form-control" 
+            id="start_time_diff" 
+            name="start_time_diff" 
+            value="{{ start_time_diff or '' }}" 
+            required
+          >
+        </div>
+      </div>
+      
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label for="end_time_diff" class="form-label">Horário Final</label>
+          <input 
+            type="time" 
+            class="form-control" 
+            id="end_time_diff" 
+            name="end_time_diff" 
+            value="{{ end_time_diff or '' }}" 
+            required
+          >
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-calculator"></i> Calcular Diferença
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if result_time and calculation_type == 'add_subtract' %}
+<div class="mt-4">
+  <div class="card result-card">
+    <div class="card-body">
+      <h5 class="card-title">Resultado</h5>
+      <p class="card-text">
+        <span class="fs-4">{{ result_time }}</span>
+      </p>
+      <p class="text-muted mb-0">
+        {% if operation == 'add' %}
+          {{ start_time }} + {{ hours }}h {{ minutes }}min = {{ result_time }}
+        {% else %}
+          {{ start_time }} - {{ hours }}h {{ minutes }}min = {{ result_time }}
+        {% endif %}
+      </p>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if diff_hours is defined and diff_minutes is defined and calculation_type == 'difference' %}
+<div class="mt-4">
+  <div class="card result-card">
+    <div class="card-body">
+      <h5 class="card-title">Diferença</h5>
+      <p class="card-text">
+        <span class="fs-4">
+          {% if diff_hours > 0 %}{{ diff_hours }}h{% endif %}
+          {% if diff_minutes > 0 or diff_hours == 0 %} {{ diff_minutes }}m{% endif %}
+        </span>
+      </p>
+      <p class="text-muted mb-0">
+        {{ start_time_diff }} até {{ end_time_diff }}
+      </p>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %} 
