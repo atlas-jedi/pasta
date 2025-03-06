@@ -1,0 +1,7 @@
+Metadata-Version: 2.2
+Name: file-manager
+Version: 1.0.0
+Requires-Dist: Flask
+Requires-Dist: Werkzeug
+Requires-Dist: cloudinary
+Dynamic: requires-dist

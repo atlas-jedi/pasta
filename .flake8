@@ -1,0 +1,40 @@
+[flake8]
+max-line-length = 100
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.pyc,
+    *.egg-info,
+    .eggs,
+    .venv,
+    .pytest_cache,
+    htmlcov
+
+# Import order settings
+import-order-style = google
+application-import-names = app
+
+# Docstring settings
+docstring-convention = google
+
+# Additional settings
+max-complexity = 10
+statistics = True
+count = True
+show-source = True
+
+# String quote settings
+inline-quotes = single
+multiline-quotes = single
+docstring-quotes = double
+
+# Error codes to ignore
+ignore = 
+    # D100: Missing docstring in public module
+    D100,
+    # D104: Missing docstring in public package
+    D104,
+    # W503: Line break before binary operator (conflicts with black)
+    W503 
