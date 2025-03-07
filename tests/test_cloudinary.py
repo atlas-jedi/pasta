@@ -1,4 +1,4 @@
-# from io import BytesIO
+from io import BytesIO
 
 import cloudinary
 import cloudinary.uploader
@@ -22,29 +22,28 @@ def test_cloudinary_connection():
         pytest.fail(f'Failed to connect to Cloudinary: {str(e)}')
 
 
-# def test_upload_file(client):
-#     """Tests uploading a file to Cloudinary"""
-#     # Create a test file
-#     data = {
-#         'file': (BytesIO(b'test file content'), 'test.txt'),
-#         'path': ''
-#     }
+def test_upload_file(client):
+    """Tests uploading a file to Cloudinary."""
+    data = {
+        'file': (BytesIO(b'test file content'), 'test.txt'),
+        'path': ''
+    }
 
-#     # Upload the file
-#     response = client.post('/upload', data=data, content_type='multipart/form-data')
-#     assert response.status_code == 302  # Redirect after upload
+    # Upload the file
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
+    assert response.status_code == 302
 
-#     # Verify if the file exists in Cloudinary
-#     try:
-#         resources = cloudinary.api.resources()
-#         found = any(r['public_id'].endswith('test.txt') for r in resources.get('resources', []))
-#         assert found, "File not found in Cloudinary"
-#     finally:
-#         # Clean up test file
-#         try:
-#             cloudinary.uploader.destroy('test.txt')
-#         except:
-#             pass
+    # Verify if the file exists in Cloudinary
+    try:
+        resources = cloudinary.api.resources(resource_type='raw')
+        found = any(r['public_id'] == 'test.txt' for r in resources.get('resources', []))
+        assert found, 'File not found in Cloudinary'
+    finally:
+        # Clean up test file
+        try:
+            cloudinary.uploader.destroy('test.txt', resource_type='raw')
+        except cloudinary.api.NotFound:
+            pass
 
 # def test_delete_file(client, app):
 #     """Tests deleting a file from Cloudinary"""
