@@ -5,21 +5,42 @@
 {% block header_title %}Pasta{% endblock %}
 
 {% block header_actions %}
-<div>
-  <button
-    class="btn btn-sm btn-primary me-2"
-    data-bs-toggle="modal"
-    data-bs-target="#uploadModal"
-  >
-    <i class="bi bi-upload"></i> Upload
-  </button>
-  <button
-    class="btn btn-sm btn-success"
-    data-bs-toggle="modal"
-    data-bs-target="#mkdirModal"
-  >
-    <i class="bi bi-folder-plus"></i> Nova Pasta
-  </button>
+<div class="d-flex align-items-center mb-3">
+  <div class="me-auto d-flex align-items-center">
+    <div class="storage-indicator me-3">
+      {% if cloudinary_status.configured %}
+        {% if cloudinary_status.online %}
+          <span class="badge bg-success" title="Cloudinary Online">
+            <i class="bi bi-cloud-check"></i> Cloudinary
+          </span>
+        {% else %}
+          <span class="badge bg-warning" title="Cloudinary Offline">
+            <i class="bi bi-cloud-slash"></i> Cloudinary Offline
+          </span>
+        {% endif %}
+      {% else %}
+        <span class="badge bg-secondary" title="Local Storage">
+          <i class="bi bi-hdd"></i> Local Storage
+        </span>
+      {% endif %}
+    </div>
+    <div>
+      <button
+        class="btn btn-sm btn-primary me-2"
+        data-bs-toggle="modal"
+        data-bs-target="#uploadModal"
+      >
+        <i class="bi bi-upload"></i> Upload
+      </button>
+      <button
+        class="btn btn-sm btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#mkdirModal"
+      >
+        <i class="bi bi-folder-plus"></i> Nova Pasta
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 

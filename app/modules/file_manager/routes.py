@@ -15,145 +15,216 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 file_manager_bp = Blueprint(
-    "file_manager", __name__, template_folder="templates", static_folder="static", url_prefix="/"
+    'file_manager', __name__, template_folder='templates', static_folder='static', url_prefix='/'
 )
 
 
 def get_cloudinary_resource_type(filename):
-    """Determina o tipo de recurso do Cloudinary baseado na extensão do arquivo"""
-    image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
-    video_extensions = {".mp4", ".mov", ".avi", ".webm"}
+    """Determines the Cloudinary resource type based on the file extension."""
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'}
+    video_extensions = {'.mp4', '.mov', '.avi', '.webm'}
     ext = os.path.splitext(filename)[1].lower()
 
     if ext in image_extensions:
-        return "image"
+        return 'image'
     elif ext in video_extensions:
-        return "video"
-    return "raw"
+        return 'video'
+    return 'raw'
 
 
-@file_manager_bp.route("/")
-def index():
-    path = request.args.get("path", "")
-    full_path = os.path.join(current_app.config["UPLOAD_FOLDER"], path)
+def check_cloudinary_status():
+    """Check Cloudinary configuration and connection status."""
+    status = {
+        'configured': all(current_app.config['CLOUDINARY'].values()),
+        'online': False,
+        'error': False,
+        'error_message': ''
+    }
 
+    if status['configured']:
+        try:
+            cloudinary.api.resources(max_results=1)
+            status['online'] = True
+        except Exception as e:
+            current_app.logger.error(f'Cloudinary connection error: {e}')
+            status['error'] = True
+            status['error_message'] = str(e)
+
+    return status
+
+
+def list_cloudinary_items(path, cloudinary_status):
+    """List items from Cloudinary storage."""
     items = []
 
-    # Se o Cloudinary está configurado, buscar arquivos de lá
-    if all(current_app.config["CLOUDINARY"].values()):
-        try:
-            # Listar recursos do Cloudinary
-            result = cloudinary.api.resources(
-                type="upload", prefix=path if path else None, max_results=500
-            )
+    try:
+        # List files
+        result = cloudinary.api.resources(
+            type='upload', prefix=path if path else None, max_results=500
+        )
 
-            for resource in result.get("resources", []):
-                filename = os.path.basename(resource["public_id"])
-                items.append(
-                    {
-                        "name": filename,
-                        "is_dir": False,
-                        "size": resource.get("bytes", 0),
-                        "path": resource["public_id"],
-                    }
-                )
-        except Exception as e:
-            current_app.logger.error(f"Erro ao listar arquivos do Cloudinary: {e}")
+        for resource in result.get('resources', []):
+            filename = os.path.basename(resource['public_id'])
+            items.append({
+                'name': filename,
+                'is_dir': False,
+                'size': resource.get('bytes', 0),
+                'path': resource['public_id'],
+            })
 
-    # Caso contrário, usar sistema de arquivos local
-    else:
-        for item in os.listdir(full_path):
-            item_path = os.path.join(full_path, item)
-            items.append(
-                {
-                    "name": item,
-                    "is_dir": os.path.isdir(item_path),
-                    "size": os.path.getsize(item_path) if not os.path.isdir(item_path) else 0,
-                    "path": os.path.join(path, item),
-                }
-            )
+        # List folders
+        folders_result = cloudinary.api.subfolders(path if path and path.strip() else '')
+        for folder in folders_result.get('folders', []):
+            folder_name = os.path.basename(folder['path'])
+            items.append({
+                'name': folder_name,
+                'is_dir': True,
+                'size': 0,
+                'path': folder['path'],
+            })
 
-    return render_template("index.html", items=items, current_path=path)
+    except Exception as e:
+        current_app.logger.error(f'Error listing Cloudinary items: {e}')
+        cloudinary_status['error'] = True
+        cloudinary_status['error_message'] = str(e)
+
+    return items
 
 
-@file_manager_bp.route("/upload", methods=["POST"])
+def list_local_items(full_path, path):
+    """List items from local filesystem."""
+    items = []
+    for item in os.listdir(full_path):
+        item_path = os.path.join(full_path, item)
+        items.append({
+            'name': item,
+            'is_dir': os.path.isdir(item_path),
+            'size': os.path.getsize(item_path) if not os.path.isdir(item_path) else 0,
+            'path': os.path.join(path, item),
+        })
+    return items
+
+
+@file_manager_bp.route('/')
+def index():
+    """List files and directories at the given path."""
+    path = request.args.get('path', '')
+    full_path = os.path.join(current_app.config['UPLOAD_FOLDER'], path)
+
+    cloudinary_status = check_cloudinary_status()
+    items = []
+
+    if cloudinary_status['configured'] and cloudinary_status['online']:
+        items = list_cloudinary_items(path, cloudinary_status)
+
+    use_local = (
+        not cloudinary_status['configured']
+        or not cloudinary_status['online']
+        or cloudinary_status['error']
+    )
+
+    if use_local:
+        items = list_local_items(full_path, path)
+
+    return render_template(
+        'index.html',
+        items=items,
+        current_path=path,
+        cloudinary_status=cloudinary_status
+    )
+
+
+@file_manager_bp.route('/upload', methods=['POST'])
 def upload_file():
-    path = request.form.get("path", "")
+    """Handle file upload to either Cloudinary or local filesystem."""
+    path = request.form.get('path', '')
 
-    if "file" not in request.files:
-        return redirect(url_for("file_manager.index"))
+    if 'file' not in request.files:
+        return redirect(url_for('file_manager.index'))
 
-    file = request.files["file"]
-    if file.filename == "":
-        return redirect(url_for("file_manager.index"))
+    file = request.files['file']
+    if file.filename == '':
+        return redirect(url_for('file_manager.index'))
 
     filename = secure_filename(file.filename)
 
-    # Se o Cloudinary está configurado, fazer upload para lá
-    if all(current_app.config["CLOUDINARY"].values()):
+    # If Cloudinary is configured, upload there
+    if all(current_app.config['CLOUDINARY'].values()):
         try:
             resource_type = get_cloudinary_resource_type(filename)
             upload_path = os.path.join(path, filename) if path else filename
 
-            # Upload para o Cloudinary
+            # Upload to Cloudinary
             result = cloudinary.uploader.upload(
                 file, public_id=upload_path, resource_type=resource_type
             )
-            current_app.logger.info(f"Arquivo enviado para Cloudinary: {result['url']}")
+            current_app.logger.info(f'File uploaded to Cloudinary: {result["url"]}')
         except Exception as e:
-            current_app.logger.error(f"Erro ao fazer upload para Cloudinary: {e}")
+            current_app.logger.error(f'Error uploading to Cloudinary: {e}')
 
-    # Caso contrário, salvar localmente
+    # Otherwise, save locally
     else:
-        target_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], path)
+        target_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], path)
         file.save(os.path.join(target_dir, filename))
 
-    return redirect(url_for("file_manager.index", path=path))
+    return redirect(url_for('file_manager.index', path=path))
 
 
-@file_manager_bp.route("/delete/<path:filename>")
+@file_manager_bp.route('/delete/<path:filename>')
 def delete_file(filename):
-    # Se o Cloudinary está configurado, deletar de lá
-    if all(current_app.config["CLOUDINARY"].values()):
+    """Delete a file from either Cloudinary or local filesystem."""
+    # If Cloudinary is configured, delete from there
+    if all(current_app.config['CLOUDINARY'].values()):
         try:
             resource_type = get_cloudinary_resource_type(filename)
             cloudinary.uploader.destroy(filename, resource_type=resource_type)
         except Exception as e:
-            current_app.logger.error(f"Erro ao deletar arquivo do Cloudinary: {e}")
+            current_app.logger.error(f'Error deleting file from Cloudinary: {e}')
 
-    # Caso contrário, deletar localmente
+    # Otherwise, delete locally
     else:
-        target = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        target = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         if os.path.isfile(target):
             os.remove(target)
         elif os.path.isdir(target):
             os.rmdir(target)
 
-    return redirect(url_for("file_manager.index", path=os.path.dirname(filename)))
+    return redirect(url_for('file_manager.index', path=os.path.dirname(filename)))
 
 
-@file_manager_bp.route("/download/<path:filename>")
+@file_manager_bp.route('/download/<path:filename>')
 def download_file(filename):
-    # Se o Cloudinary está configurado, redirecionar para a URL do arquivo
-    if all(current_app.config["CLOUDINARY"].values()):
+    """Download a file from either Cloudinary or local filesystem."""
+    # If Cloudinary is configured, redirect to file URL
+    if all(current_app.config['CLOUDINARY'].values()):
         try:
             resource = cloudinary.api.resource(filename)
-            return redirect(resource["url"])
+            return redirect(resource['url'])
         except Exception as e:
-            current_app.logger.error(f"Erro ao obter URL do Cloudinary: {e}")
+            current_app.logger.error(f'Error getting Cloudinary URL: {e}')
 
-    # Caso contrário, enviar arquivo local
-    directory = os.path.join(current_app.config["UPLOAD_FOLDER"], os.path.dirname(filename))
+    # Otherwise, send local file
+    directory = os.path.join(current_app.config['UPLOAD_FOLDER'], os.path.dirname(filename))
     return send_from_directory(directory, os.path.basename(filename), as_attachment=True)
 
 
-@file_manager_bp.route("/mkdir", methods=["POST"])
+@file_manager_bp.route('/mkdir', methods=['POST'])
 def mkdir():
-    path = request.form.get("path", "")
-    dirname = secure_filename(request.form["dirname"])
+    """Create a new directory in Cloudinary or local filesystem."""
+    path = request.form.get('path', '')
+    dirname = secure_filename(request.form['dirname'])
 
-    # Criar diretório apenas localmente
-    target_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], path, dirname)
-    os.makedirs(target_dir, exist_ok=True)
+    # If Cloudinary is configured, create folder there
+    if all(current_app.config['CLOUDINARY'].values()):
+        try:
+            folder_path = os.path.join(path, dirname) if path else dirname
+            cloudinary.api.create_folder(folder_path)
+        except Exception as e:
+            current_app.logger.error(f'Error creating folder in Cloudinary: {e}')
 
-    return redirect(url_for("file_manager.index", path=path))
+    # Otherwise, create directory locally
+    else:
+        target_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], path, dirname)
+        os.makedirs(target_dir, exist_ok=True)
+
+    return redirect(url_for('file_manager.index', path=path))
