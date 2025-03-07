@@ -98,7 +98,8 @@ class CloudinaryStorage(StorageProvider):
         try:
             # List files
             result = cloudinary.api.resources(
-                type='upload',
+                # ToDo: return all files that match the allowed extensions
+                resource_type='raw',
                 prefix=path if path else None,
                 max_results=500
             )
