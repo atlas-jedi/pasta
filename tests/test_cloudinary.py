@@ -1,5 +1,4 @@
-import os
-from io import BytesIO
+# from io import BytesIO
 
 import cloudinary
 import cloudinary.uploader
@@ -7,76 +6,81 @@ import pytest
 
 
 def test_cloudinary_config(app):
-    """Testa se o Cloudinary está configurado corretamente"""
-    assert app.config["CLOUDINARY"]["cloud_name"] is not None
-    assert app.config["CLOUDINARY"]["api_key"] is not None
-    assert app.config["CLOUDINARY"]["api_secret"] is not None
+    """Tests if Cloudinary is configured correctly."""
+    assert app.config['CLOUDINARY']['cloud_name'] is not None
+    assert app.config['CLOUDINARY']['api_key'] is not None
+    assert app.config['CLOUDINARY']['api_secret'] is not None
 
 
-def test_cloudinary_connection(app):
-    """Testa se é possível conectar ao Cloudinary"""
+def test_cloudinary_connection():
+    """Tests if it's possible to connect to Cloudinary."""
     try:
         result = cloudinary.api.resources(max_results=1)
         assert isinstance(result, dict)
-        assert "resources" in result
+        assert 'resources' in result
     except Exception as e:
-        pytest.fail(f"Falha ao conectar com Cloudinary: {str(e)}")
+        pytest.fail(f'Failed to connect to Cloudinary: {str(e)}')
 
 
 # def test_upload_file(client):
-#     """Testa o upload de um arquivo para o Cloudinary"""
-#     # Criar um arquivo de teste
+#     """Tests uploading a file to Cloudinary"""
+#     # Create a test file
 #     data = {
 #         'file': (BytesIO(b'test file content'), 'test.txt'),
 #         'path': ''
 #     }
 
-#     # Fazer upload do arquivo
+#     # Upload the file
 #     response = client.post('/upload', data=data, content_type='multipart/form-data')
-#     assert response.status_code == 302  # Redirecionamento após upload
+#     assert response.status_code == 302  # Redirect after upload
 
-#     # Verificar se o arquivo existe no Cloudinary
+#     # Verify if the file exists in Cloudinary
 #     try:
 #         resources = cloudinary.api.resources()
 #         found = any(r['public_id'].endswith('test.txt') for r in resources.get('resources', []))
-#         assert found, "Arquivo não encontrado no Cloudinary"
+#         assert found, "File not found in Cloudinary"
 #     finally:
-#         # Limpar arquivo de teste
+#         # Clean up test file
 #         try:
 #             cloudinary.uploader.destroy('test.txt')
 #         except:
 #             pass
 
 # def test_delete_file(client, app):
-#     """Testa a deleção de um arquivo do Cloudinary"""
-#     # Fazer upload de um arquivo para teste
+#     """Tests deleting a file from Cloudinary"""
+#     # Upload a test file
 #     test_file = BytesIO(b'test file content')
-#     result = cloudinary.uploader.upload(test_file, public_id='test_delete.txt', resource_type='raw')
-
-#     # Tentar deletar o arquivo
+#     result = cloudinary.uploader.upload(test_file, public_id='test_delete.txt',
+#                                       resource_type='raw')
+#
+#     # Try to delete the file
 #     response = client.get(f'/delete/test_delete.txt')
-#     assert response.status_code == 302  # Redirecionamento após deleção
+#     assert response.status_code == 302  # Redirect after deletion
 
-#     # Verificar se o arquivo foi deletado
+#     # Verify if the file was deleted
 #     try:
 #         cloudinary.api.resource('test_delete.txt')
-#         pytest.fail("Arquivo não foi deletado do Cloudinary")
+#         pytest.fail("File was not deleted from Cloudinary")
 #     except cloudinary.api.NotFound:
-#         pass  # Arquivo foi deletado com sucesso
+#         pass  # File was successfully deleted
 
 # def test_download_file(client, app):
-#     """Testa o download de um arquivo do Cloudinary"""
-#     # Fazer upload de um arquivo para teste
+#     """Tests downloading a file from Cloudinary"""
+#     # Upload a test file
 #     test_content = b'test file content'
 #     test_file = BytesIO(test_content)
-#     result = cloudinary.uploader.upload(test_file, public_id='test_download.txt', resource_type='raw')
+#     result = cloudinary.uploader.upload(
+#         test_file,
+#         public_id='test_download.txt',
+#         resource_type='raw'
+#     )
 
 #     try:
-#         # Tentar fazer download do arquivo
+#         # Try to download the file
 #         response = client.get(f'/download/test_download.txt')
-#         assert response.status_code == 302  # Redirecionamento para URL do Cloudinary
+#         assert response.status_code == 302  # Redirect to Cloudinary URL
 #     finally:
-#         # Limpar arquivo de teste
+#         # Clean up test file
 #         try:
 #             cloudinary.uploader.destroy('test_download.txt')
 #         except:
