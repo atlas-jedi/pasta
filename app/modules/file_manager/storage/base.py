@@ -7,6 +7,18 @@ class StorageProvider(ABC):
     """Abstract base class for storage providers."""
 
     @abstractmethod
+    def get_storage_usage(self) -> Dict[str, Union[int, float]]:
+        """Get storage usage information.
+
+        Returns:
+            Dictionary containing:
+            - used: Used storage space in bytes
+            - total: Total storage space in bytes
+            - name: Storage provider name
+        """
+        pass
+
+    @abstractmethod
     def list_items(self, path: str) -> List[Dict[str, Union[str, bool, int]]]:
         """List items in the given path.
 

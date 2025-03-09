@@ -2,43 +2,121 @@
 
 {% block title %}Gerenciador de Arquivos{% endblock %}
 
-{% block header_title %}Pasta{% endblock %}
-
 {% block header_actions %}
-<div class="d-flex align-items-center mb-3">
-  <div class="me-auto d-flex align-items-center">
-    <div class="storage-indicator me-3">
-      {% if cloudinary_status.configured %}
-        {% if cloudinary_status.online %}
-          <span class="badge bg-success" title="Cloudinary Online">
-            <i class="bi bi-cloud-check"></i> Cloudinary
-          </span>
-        {% else %}
-          <span class="badge bg-warning" title="Cloudinary Offline">
-            <i class="bi bi-cloud-slash"></i> Cloudinary Offline
-          </span>
-        {% endif %}
-      {% else %}
-        <span class="badge bg-secondary" title="Local Storage">
-          <i class="bi bi-hdd"></i> Local Storage
-        </span>
-      {% endif %}
+<div class="container-fluid p-0">
+  <!-- Primeira linha: Indicador de status e botões (alinhados à direita) -->
+  <div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">Pasta</h4>
+      <div class="d-flex align-items-center">
+        <div class="storage-indicator me-3">
+          {% if cloudinary_status.configured %}
+            {% if cloudinary_status.online %}
+              <span class="badge bg-success" title="Cloudinary Online">
+                <i class="bi bi-cloud-check"></i> Cloudinary
+              </span>
+            {% else %}
+              <span class="badge bg-warning" title="Cloudinary Offline">
+                <i class="bi bi-cloud-slash"></i> Cloudinary Offline
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="badge bg-secondary" title="Local Storage">
+              <i class="bi bi-hdd"></i> Local Storage
+            </span>
+          {% endif %}
+        </div>
+        
+        <!-- Botões de ação -->
+        <div>
+          <button
+            class="btn btn-sm btn-primary me-2"
+            data-bs-toggle="modal"
+            data-bs-target="#uploadModal"
+          >
+            <i class="bi bi-upload"></i> Upload
+          </button>
+          <button
+            class="btn btn-sm btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#mkdirModal"
+          >
+            <i class="bi bi-folder-plus"></i> Nova Pasta
+          </button>
+        </div>
+      </div>
     </div>
-    <div>
-      <button
-        class="btn btn-sm btn-primary me-2"
-        data-bs-toggle="modal"
-        data-bs-target="#uploadModal"
-      >
-        <i class="bi bi-upload"></i> Upload
-      </button>
-      <button
-        class="btn btn-sm btn-success"
-        data-bs-toggle="modal"
-        data-bs-target="#mkdirModal"
-      >
-        <i class="bi bi-folder-plus"></i> Nova Pasta
-      </button>
+  </div>
+
+  <!-- Segunda linha: Cards de armazenamento (alinhados à esquerda) -->
+  <div class="row">
+    <div class="col-12">
+      <div class="storage-cards d-flex flex-wrap gap-3 justify-content-start">
+        {% for storage in all_storages %}
+          <div class="storage-card border rounded p-2 {% if storage.is_active %}bg-light border-primary{% else %}bg-white{% endif %}">
+            <div class="d-flex align-items-center mb-1">
+              <h6 class="mb-0 me-2">
+                {% if storage.name == 'Cloudinary' %}
+                  <i class="bi bi-cloud text-primary me-1"></i>
+                {% elif storage.name == 'Local Storage' %}
+                  <i class="bi bi-hdd text-primary me-1"></i>
+                {% else %}
+                  <i class="bi bi-hdd-stack text-primary me-1"></i>
+                {% endif %}
+                {{ storage.name }}
+                {% if storage.is_active %}
+                  <small class="badge bg-primary">Ativo</small>
+                {% endif %}
+              </h6>
+            </div>
+            
+            <div class="storage-details mb-1">
+              <small class="text-muted">
+                {% set used_mb = (storage.used / 1024 / 1024)|round(2) %}
+                {% set total_mb = (storage.total / 1024 / 1024)|round(2) %}
+                {% set used_gb = (storage.used / 1024 / 1024 / 1024)|round(2) %}
+                {% set total_gb = (storage.total / 1024 / 1024 / 1024)|round(2) %}
+                
+                {% if total_gb >= 1 %}
+                  <strong>{{ used_gb }}GB</strong> de {{ total_gb }}GB
+                {% else %}
+                  <strong>{{ used_mb }}MB</strong> de {{ total_mb }}MB
+                {% endif %}
+              </small>
+            </div>
+            
+            <div class="progress" style="height: 8px; width: 250px;">
+              {% set used = storage.used|float %}
+              {% set total = storage.total|float %}
+              {% set usage_percent = (used / total * 100)|round(1) if total > 0 else 0 %}
+              
+              <div class="progress-bar 
+                {% if usage_percent > 90 %}bg-danger
+                {% elif usage_percent > 70 %}bg-warning
+                {% else %}bg-success{% endif %}" 
+                role="progressbar" 
+                style="width: {{ usage_percent }}%" 
+                aria-valuenow="{{ usage_percent }}" 
+                aria-valuemin="0" 
+                aria-valuemax="100">
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-1">
+              <small class="text-muted">{{ usage_percent }}% usado</small>
+              <small class="text-muted">
+                {% if usage_percent > 90 %}
+                  <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Crítico</span>
+                {% elif usage_percent > 70 %}
+                  <span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Atenção</span>
+                {% else %}
+                  <span class="text-success"><i class="bi bi-check-circle"></i> OK</span>
+                {% endif %}
+              </small>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>

@@ -1,5 +1,6 @@
 """Local filesystem storage provider."""
 import os
+import shutil
 from typing import Dict, List, Optional, Tuple, Union
 
 from flask import current_app, send_from_directory
@@ -100,3 +101,39 @@ class LocalStorage(StorageProvider):
             error_msg = f'Error creating local folder: {e}'
             current_app.logger.error(error_msg)
             return False, error_msg
+
+    def get_storage_usage(self) -> Dict[str, Union[int, float]]:
+        """Get storage usage information from local filesystem."""
+        try:
+            total_size = 0
+            for dirpath, _, filenames in os.walk(self.base_path):
+                for f in filenames:
+                    fp = os.path.join(dirpath, f)
+                    total_size += os.path.getsize(fp)
+
+            # Get disk usage information
+            disk_total, disk_used, disk_free = shutil.disk_usage(self.base_path)
+            
+            current_app.logger.debug(f"Local storage usage: total_size={total_size}, disk_total={disk_total}")
+            
+            # Garantir que os valores são números
+            if not isinstance(total_size, (int, float)):
+                current_app.logger.warning(f"Local total_size não é um número: {total_size}")
+                total_size = 0
+                
+            if not isinstance(disk_total, (int, float)):
+                current_app.logger.warning(f"Local disk_total não é um número: {disk_total}")
+                disk_total = 1  # Evitar divisão por zero
+            
+            return {
+                'used': total_size,  # actual usage of upload folder
+                'total': disk_total,  # total disk space
+                'name': 'Local Storage'
+            }
+        except Exception as e:
+            current_app.logger.error(f'Error getting local storage usage: {e}')
+            return {
+                'used': 0,
+                'total': 1,
+                'name': 'Local Storage'
+            }

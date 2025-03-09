@@ -23,8 +23,64 @@ def index():
     """List files and directories at the given path."""
     path = request.args.get('path', '')
 
+    # Obter o storage atual
     storage = get_storage_provider()
     items = storage.list_items(path)
+    
+    # Lista para armazenar informações de todos os storages
+    all_storages = []
+    
+    # Obter informações do storage atual
+    try:
+        storage_usage = storage.get_storage_usage()
+        
+        # Verificar se os valores são dicionários aninhados ou valores diretos
+        used = storage_usage.get('used', 0)
+        total = storage_usage.get('total', 1)
+        name = storage_usage.get('name', 'Storage')
+        
+        # Se 'used' ou 'total' forem dicionários, tente extrair valores numéricos
+        if isinstance(used, dict):
+            current_app.logger.debug(f"'used' é um dicionário: {used}")
+            used = 0  # valor padrão seguro
+        
+        if isinstance(total, dict):
+            current_app.logger.debug(f"'total' é um dicionário: {total}")
+            total = 1  # valor padrão seguro
+            
+        # Garantir que os valores são números
+        current_storage = {
+            'used': float(used),
+            'total': max(float(total), 1),  # Evitar divisão por zero
+            'name': str(name),
+            'is_active': True  # Indica que este é o storage atual
+        }
+        
+        all_storages.append(current_storage)
+        
+    except Exception as e:
+        current_app.logger.error(f'Error getting storage usage: {e}')
+        current_storage = {
+            'used': 0,
+            'total': 1,
+            'name': 'Error Storage',
+            'is_active': True
+        }
+        all_storages.append(current_storage)
+    
+    # No futuro, aqui você pode adicionar outros storages à lista all_storages
+    # Exemplo:
+    # try:
+    #     other_storage = get_other_storage_provider()
+    #     other_storage_usage = other_storage.get_storage_usage()
+    #     all_storages.append({
+    #         'used': float(other_storage_usage.get('used', 0)),
+    #         'total': max(float(other_storage_usage.get('total', 1)), 1),
+    #         'name': str(other_storage_usage.get('name', 'Other Storage')),
+    #         'is_active': False
+    #     })
+    # except Exception as e:
+    #     current_app.logger.error(f'Error getting other storage usage: {e}')
 
     # Get Cloudinary status from storage if it's CloudinaryStorage
     cloudinary_status = getattr(storage, 'status_checker', None)
@@ -37,7 +93,9 @@ def index():
         'index.html',
         items=items,
         current_path=path,
-        cloudinary_status=cloudinary_status
+        cloudinary_status=cloudinary_status,
+        storage_usage=current_storage,  # Mantém compatibilidade com o template atual
+        all_storages=all_storages  # Nova variável para múltiplos storages
     )
 
 

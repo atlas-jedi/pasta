@@ -185,3 +185,47 @@ class CloudinaryStorage(StorageProvider):
             error_msg = f'Error creating Cloudinary folder: {e}'
             current_app.logger.error(error_msg)
             return False, error_msg
+
+    def get_storage_usage(self) -> Dict[str, Union[int, float]]:
+        """Get storage usage information from Cloudinary."""
+        try:
+            usage = cloudinary.api.usage()
+            current_app.logger.debug(f'Cloudinary usage response: {usage}')
+            
+            # Extrair valores numéricos dos dicionários aninhados
+            storage_used = 0
+            storage_limit = 0
+            
+            # Obter o uso de armazenamento (em bytes)
+            if 'storage' in usage and isinstance(usage['storage'], dict) and 'usage' in usage['storage']:
+                storage_used = usage['storage']['usage']
+            
+            # Obter o limite de armazenamento
+            # No plano gratuito, o limite é baseado em créditos
+            if 'credits' in usage and isinstance(usage['credits'], dict):
+                if 'limit' in usage['credits']:
+                    # Converter créditos para bytes (aproximadamente 1 crédito = 1GB)
+                    storage_limit = usage['credits']['limit'] * 1024 * 1024 * 1024
+            
+            # Verificar se os valores são números
+            if not isinstance(storage_used, (int, float)):
+                current_app.logger.warning(f'Cloudinary storage_used não é um número: {storage_used}')
+                storage_used = 0
+                
+            if not isinstance(storage_limit, (int, float)) or storage_limit <= 0:
+                current_app.logger.warning(f'Cloudinary storage_limit inválido: {storage_limit}')
+                # Definir um valor padrão para o plano gratuito (25GB)
+                storage_limit = 25 * 1024 * 1024 * 1024
+                
+            return {
+                'used': storage_used,  # in bytes
+                'total': storage_limit,  # in bytes
+                'name': 'Cloudinary'
+            }
+        except Exception as e:
+            current_app.logger.error(f'Error getting Cloudinary usage: {e}')
+            return {
+                'used': 0,
+                'total': 1,
+                'name': 'Cloudinary'
+            }
