@@ -96,6 +96,20 @@ class CloudinaryStorage(StorageProvider):
             return items
 
         try:
+            # List folders
+            folders_result = cloudinary.api.subfolders(
+                path if path and path.strip() else ''
+            )
+
+            for folder in folders_result.get('folders', []):
+                folder_name = os.path.basename(folder['path'])
+                items.append({
+                    'name': folder_name,
+                    'is_dir': True,
+                    'size': 0,
+                    'path': folder['path'],
+                })
+
             # List files
             result = cloudinary.api.resources(
                 # ToDo: return all files that match the allowed extensions
@@ -111,20 +125,6 @@ class CloudinaryStorage(StorageProvider):
                     'is_dir': False,
                     'size': resource.get('bytes', 0),
                     'path': resource['public_id'],
-                })
-
-            # List folders
-            folders_result = cloudinary.api.subfolders(
-                path if path and path.strip() else ''
-            )
-
-            for folder in folders_result.get('folders', []):
-                folder_name = os.path.basename(folder['path'])
-                items.append({
-                    'name': folder_name,
-                    'is_dir': True,
-                    'size': 0,
-                    'path': folder['path'],
                 })
 
         except Exception as e:
