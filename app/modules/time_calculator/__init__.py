@@ -1,1 +1,1 @@
-# Arquivo de inicialização do módulo time_calculator
+# Initialization file for the time_calculator module

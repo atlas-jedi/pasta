@@ -23,41 +23,41 @@ def index():
     """List files and directories at the given path."""
     path = request.args.get('path', '')
 
-    # Obter o storage atual
+    # Get the current storage
     storage = get_storage_provider()
     items = storage.list_items(path)
-    
-    # Lista para armazenar informações de todos os storages
+
+    # List to store information from all storages
     all_storages = []
-    
-    # Obter informações do storage atual
+
+    # Get information from the current storage
     try:
         storage_usage = storage.get_storage_usage()
-        
-        # Verificar se os valores são dicionários aninhados ou valores diretos
+
+        # Check if the values are nested dictionaries or direct values
         used = storage_usage.get('used', 0)
         total = storage_usage.get('total', 1)
         name = storage_usage.get('name', 'Storage')
-        
-        # Se 'used' ou 'total' forem dicionários, tente extrair valores numéricos
+
+        # If 'used' or 'total' are dictionaries, try to extract numeric values
         if isinstance(used, dict):
-            current_app.logger.debug(f"'used' é um dicionário: {used}")
-            used = 0  # valor padrão seguro
-        
+            current_app.logger.debug(f"'used' is a dictionary: {used}")
+            used = 0  # safe default value
+
         if isinstance(total, dict):
-            current_app.logger.debug(f"'total' é um dicionário: {total}")
-            total = 1  # valor padrão seguro
-            
-        # Garantir que os valores são números
+            current_app.logger.debug(f"'total' is a dictionary: {total}")
+            total = 1  # safe default value
+
+        # Ensure the values are numbers
         current_storage = {
             'used': float(used),
-            'total': max(float(total), 1),  # Evitar divisão por zero
+            'total': max(float(total), 1),  # Avoid division by zero
             'name': str(name),
-            'is_active': True  # Indica que este é o storage atual
+            'is_active': True  # Indicates this is the current storage
         }
-        
+
         all_storages.append(current_storage)
-        
+
     except Exception as e:
         current_app.logger.error(f'Error getting storage usage: {e}')
         current_storage = {
@@ -67,9 +67,9 @@ def index():
             'is_active': True
         }
         all_storages.append(current_storage)
-    
-    # No futuro, aqui você pode adicionar outros storages à lista all_storages
-    # Exemplo:
+
+    # In the future, you can add other storages to the all_storages list here
+    # Example:
     # try:
     #     other_storage = get_other_storage_provider()
     #     other_storage_usage = other_storage.get_storage_usage()
@@ -94,8 +94,8 @@ def index():
         items=items,
         current_path=path,
         cloudinary_status=cloudinary_status,
-        storage_usage=current_storage,  # Mantém compatibilidade com o template atual
-        all_storages=all_storages  # Nova variável para múltiplos storages
+        storage_usage=current_storage,  # Maintains compatibility with the current template
+        all_storages=all_storages  # New variable for multiple storages
     )
 
 

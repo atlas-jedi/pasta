@@ -10,7 +10,7 @@ def run_command(command, description):
     """Run a command and print its output."""
     print(f"\n=== Running {description} ===")
     try:
-        # Configurando encoding explicitamente para UTF-8
+        # Explicitly setting encoding to UTF-8
         result = subprocess.run(
             command, capture_output=True, text=True, encoding="utf-8", errors="replace"
         )
@@ -46,13 +46,13 @@ def main():
         if current_code != 0:
             exit_code = current_code
 
-    # Se o flake8 gerou um relatório, vamos lê-lo e exibi-lo
+    # If flake8 generated a report, let's read it and display it
     try:
         if Path("flake8_report.txt").exists():
             print("\n=== Flake8 Report ===")
             with open("flake8_report.txt", "r", encoding="utf-8") as f:
                 print(f.read())
-            Path("flake8_report.txt").unlink()  # Remove o arquivo temporário
+            Path("flake8_report.txt").unlink()  # Remove the temporary file
     except Exception as e:
         print(f"Error reading flake8 report: {str(e)}", file=sys.stderr)
 

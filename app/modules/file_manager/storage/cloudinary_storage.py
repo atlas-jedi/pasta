@@ -191,32 +191,36 @@ class CloudinaryStorage(StorageProvider):
         try:
             usage = cloudinary.api.usage()
             current_app.logger.debug(f'Cloudinary usage response: {usage}')
-            
-            # Extrair valores numéricos dos dicionários aninhados
+
+            # Extract numeric values from nested dictionaries
             storage_used = 0
             storage_limit = 0
-            
-            # Obter o uso de armazenamento (em bytes)
-            if 'storage' in usage and isinstance(usage['storage'], dict) and 'usage' in usage['storage']:
+
+            # Get storage usage (in bytes)
+            has_storage = ('storage' in usage and isinstance(usage['storage'], dict) and
+                           'usage' in usage['storage'])
+            if has_storage:
                 storage_used = usage['storage']['usage']
-            
-            # Obter o limite de armazenamento
-            # No plano gratuito, o limite é baseado em créditos
+
+            # Get storage limit
+            # In the free plan, the limit is based on credits
             if 'credits' in usage and isinstance(usage['credits'], dict):
                 if 'limit' in usage['credits']:
-                    # Converter créditos para bytes (aproximadamente 1 crédito = 1GB)
+                    # Convert credits to bytes (approximately 1 credit = 1GB)
                     storage_limit = usage['credits']['limit'] * 1024 * 1024 * 1024
-            
-            # Verificar se os valores são números
+
+            # Verify if the values are numbers
             if not isinstance(storage_used, (int, float)):
-                current_app.logger.warning(f'Cloudinary storage_used não é um número: {storage_used}')
+                msg = f'Cloudinary storage_used is not a number: {storage_used}'
+                current_app.logger.warning(msg)
                 storage_used = 0
-                
+
             if not isinstance(storage_limit, (int, float)) or storage_limit <= 0:
-                current_app.logger.warning(f'Cloudinary storage_limit inválido: {storage_limit}')
-                # Definir um valor padrão para o plano gratuito (25GB)
+                msg = f'Cloudinary storage_limit invalid: {storage_limit}'
+                current_app.logger.warning(msg)
+                # Set a default value for the free plan (25GB)
                 storage_limit = 25 * 1024 * 1024 * 1024
-                
+
             return {
                 'used': storage_used,  # in bytes
                 'total': storage_limit,  # in bytes

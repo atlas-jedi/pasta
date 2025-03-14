@@ -113,18 +113,20 @@ class LocalStorage(StorageProvider):
 
             # Get disk usage information
             disk_total, disk_used, disk_free = shutil.disk_usage(self.base_path)
-            
-            current_app.logger.debug(f"Local storage usage: total_size={total_size}, disk_total={disk_total}")
-            
-            # Garantir que os valores são números
+
+            current_app.logger.debug(
+                f'Local storage usage: total_size={total_size}, disk_total={disk_total}'
+            )
+
+            # Ensure the values are numbers
             if not isinstance(total_size, (int, float)):
-                current_app.logger.warning(f"Local total_size não é um número: {total_size}")
+                current_app.logger.warning(f'Local total_size is not a number: {total_size}')
                 total_size = 0
-                
+
             if not isinstance(disk_total, (int, float)):
-                current_app.logger.warning(f"Local disk_total não é um número: {disk_total}")
-                disk_total = 1  # Evitar divisão por zero
-            
+                current_app.logger.warning(f'Local disk_total is not a number: {disk_total}')
+                disk_total = 1  # Avoid division by zero
+
             return {
                 'used': total_size,  # actual usage of upload folder
                 'total': disk_total,  # total disk space
