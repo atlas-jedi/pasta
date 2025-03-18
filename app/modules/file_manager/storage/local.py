@@ -1,9 +1,11 @@
 """Local filesystem storage provider."""
+
 import os
 import shutil
 from typing import Dict, List, Optional, Tuple, Union
 
-from flask import current_app, send_from_directory
+from flask import current_app
+from flask import send_from_directory
 from werkzeug.utils import secure_filename
 
 from ..storage.base import StorageProvider
@@ -39,12 +41,14 @@ class LocalStorage(StorageProvider):
         try:
             for item in os.listdir(full_path):
                 item_path = os.path.join(full_path, item)
-                items.append({
-                    'name': item,
-                    'is_dir': os.path.isdir(item_path),
-                    'size': os.path.getsize(item_path) if not os.path.isdir(item_path) else 0,
-                    'path': os.path.join(path, item),
-                })
+                items.append(
+                    {
+                        'name': item,
+                        'is_dir': os.path.isdir(item_path),
+                        'size': os.path.getsize(item_path) if not os.path.isdir(item_path) else 0,
+                        'path': os.path.join(path, item),
+                    }
+                )
             return items
         except Exception as e:
             current_app.logger.error(f'Error listing local files: {e}')
@@ -130,12 +134,8 @@ class LocalStorage(StorageProvider):
             return {
                 'used': total_size,  # actual usage of upload folder
                 'total': disk_total,  # total disk space
-                'name': 'Local Storage'
+                'name': 'Local Storage',
             }
         except Exception as e:
             current_app.logger.error(f'Error getting local storage usage: {e}')
-            return {
-                'used': 0,
-                'total': 1,
-                'name': 'Local Storage'
-            }
+            return {'used': 0, 'total': 1, 'name': 'Local Storage'}

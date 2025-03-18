@@ -1,14 +1,13 @@
 """File manager routes module."""
+
 import os
 
-from flask import (
-    Blueprint,
-    current_app,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
+from flask import Blueprint
+from flask import current_app
+from flask import redirect
+from flask import render_template
+from flask import request
+from flask import url_for
 from werkzeug.utils import secure_filename
 
 from .storage.factory import get_storage_provider
@@ -41,11 +40,11 @@ def index():
 
         # If 'used' or 'total' are dictionaries, try to extract numeric values
         if isinstance(used, dict):
-            current_app.logger.debug(f"'used' is a dictionary: {used}")
+            current_app.logger.debug(f'"used" is a dictionary: {used}')
             used = 0  # safe default value
 
         if isinstance(total, dict):
-            current_app.logger.debug(f"'total' is a dictionary: {total}")
+            current_app.logger.debug(f'"total" is a dictionary: {total}')
             total = 1  # safe default value
 
         # Ensure the values are numbers
@@ -53,19 +52,14 @@ def index():
             'used': float(used),
             'total': max(float(total), 1),  # Avoid division by zero
             'name': str(name),
-            'is_active': True  # Indicates this is the current storage
+            'is_active': True,  # Indicates this is the current storage
         }
 
         all_storages.append(current_storage)
 
     except Exception as e:
         current_app.logger.error(f'Error getting storage usage: {e}')
-        current_storage = {
-            'used': 0,
-            'total': 1,
-            'name': 'Error Storage',
-            'is_active': True
-        }
+        current_storage = {'used': 0, 'total': 1, 'name': 'Error Storage', 'is_active': True}
         all_storages.append(current_storage)
 
     # In the future, you can add other storages to the all_storages list here
@@ -95,7 +89,7 @@ def index():
         current_path=path,
         cloudinary_status=cloudinary_status,
         storage_usage=current_storage,  # Maintains compatibility with the current template
-        all_storages=all_storages  # New variable for multiple storages
+        all_storages=all_storages,  # New variable for multiple storages
     )
 
 

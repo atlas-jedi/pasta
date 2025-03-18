@@ -1,4 +1,5 @@
 """Storage provider factory."""
+
 from flask import current_app
 
 from .base import StorageProvider

@@ -25,10 +25,7 @@ def test_cloudinary_connection():
 
 def test_upload_file(client):
     """Tests uploading a file to Cloudinary."""
-    data = {
-        'file': (BytesIO(b'test file content'), 'test.txt'),
-        'path': ''
-    }
+    data = {'file': (BytesIO(b'test file content'), 'test.txt'), 'path': ''}
 
     # Upload the file
     response = client.post('/upload', data=data, content_type='multipart/form-data')
@@ -64,6 +61,7 @@ def test_create_folder():
             cloudinary.api.delete_folder(folder_name)
         except Exception:
             pass
+
 
 # def test_download_file(client, app):
 #     """Tests downloading a file from Cloudinary"""
