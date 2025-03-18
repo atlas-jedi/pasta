@@ -34,4 +34,5 @@ htmlcov/
 # Flake8
 .flake8-report/
 .flake8-stats
-*.flake8.report 
+*.flake8.report
+*.egg-info/
