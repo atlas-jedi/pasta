@@ -13,6 +13,7 @@ ENV/
 
 # Uploads directory content (keep the directory itself)
 uploads/*
+test_uploads/
 
 # IDE files
 .vscode/
@@ -21,6 +22,17 @@ uploads/*
 # Logs
 *.log
 
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/
+
 # SSL certificates (for development only)
 # cert.pem
 # key.pem 
+
+# Flake8
+.flake8-report/
+.flake8-stats
+*.flake8.report
+*.egg-info/

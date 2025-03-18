@@ -12,6 +12,6 @@ if __name__ == '__main__':
             'app/templates/base.html',
             'app/modules/file_manager/templates/index.html',
             'app/modules/time_calculator/templates/time_calculator.html',
-            'app/static/css/style.css'
-        ]
-    ) 
+            'app/static/css/style.css',
+        ],
+    )

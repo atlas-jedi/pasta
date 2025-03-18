@@ -1,0 +1,123 @@
+# Cursor Rules para o Projeto
+
+Este arquivo define as regras de codificação e estilo que devem ser seguidas no projeto. Estas regras ajudam a manter a consistência e a qualidade do código.
+
+## Regras de Estilo Python
+
+### Formatação de Código
+
+- **Comprimento máximo de linha**: 100 caracteres
+- **Indentação**: 4 espaços (sem tabs)
+- **Final de arquivo**: Sempre terminar arquivos com uma linha em branco
+- **Codificação**: UTF-8 para todos os arquivos Python
+
+### Nomeação
+
+- **Nomes de variáveis e funções**: Usar `snake_case`
+- **Nomes de classes**: Usar `CamelCase`
+- **Nomes de constantes**: Usar `UPPER_SNAKE_CASE`
+- **Nomes de módulos**: Usar `snake_case`
+- **Nomes de pacotes**: Usar `snake_case` e nomes curtos, evitando underscores
+
+### Strings
+
+- **Aspas**: Usar aspas simples (`'`) para strings regulares
+- **Docstrings**: Usar aspas duplas (`"`) para docstrings
+- **Strings multilinha**: Usar aspas simples para strings de múltiplas linhas
+
+### Imports
+
+- **Ordem de importação**: Seguir o estilo Google (stdlib, terceiros, aplicação)
+- **Agrupamento**:
+  1. Imports da biblioteca padrão
+  2. Imports de terceiros
+  3. Imports da aplicação
+- **Organização**: Imports devem ser alfabéticos dentro de cada grupo
+- **Um import por linha**: Para maior clareza
+
+### Docstrings
+
+- **Convenção**: Seguir a convenção Google para docstrings
+- **Escopo**: Todas as funções públicas, classes e métodos devem ter docstrings
+- **Exceções**: Módulos e pacotes públicos não precisam de docstrings (D100, D104)
+
+## Regras do Flake8
+
+```
+max-line-length = 100
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.pyc,
+    *.egg-info,
+    .eggs,
+    .venv,
+    .pytest_cache,
+    htmlcov
+
+# Import order settings
+import-order-style = google
+application-import-names = app
+
+# Docstring settings
+docstring-convention = google
+
+# Additional settings
+max-complexity = 10
+statistics = True
+count = True
+show-source = True
+
+# String quote settings
+inline-quotes = single
+multiline-quotes = single
+docstring-quotes = double
+
+# Error codes to ignore
+ignore =
+    # D100: Missing docstring in public module
+    D100,
+    # D104: Missing docstring in public package
+    D104,
+    # W503: Line break before binary operator (conflicts with black)
+    W503
+```
+
+## Workflow de Formatação
+
+Antes de cada commit, executar o script de formatação:
+
+```bash
+python format.py
+```
+
+Este script executa, em ordem:
+
+1. `isort` - Para ordenar imports
+2. `black` - Para formatar o código
+3. `autopep8` - Para corrigir problemas restantes
+4. `flake8` - Para verificar problemas de estilo
+
+## Regras para Commits
+
+- **Mensagens de commit**: Usar verbos no imperativo (ex: "Adiciona", "Corrige", "Atualiza")
+- **Tamanho dos commits**: Fazer commits pequenos e focados
+- **Convenção**: Seguir a convenção convencional para mensagens de commit:
+  - `feat`: Nova funcionalidade
+  - `fix`: Correção de bug
+  - `docs`: Alteração em documentação
+  - `style`: Formatação de código
+  - `refactor`: Refatoração de código
+  - `test`: Adição ou modificação de testes
+  - `chore`: Alterações em build, CI, etc.
+
+## Melhores Práticas
+
+- **DRY** (Don't Repeat Yourself): Evitar duplicação de código
+- **KISS** (Keep It Simple, Stupid): Manter o código simples e legível
+- **Comentários**: Usar comentários apenas quando necessário para explicar _porquê_, não _como_
+- **Funções**: Funções devem ter uma única responsabilidade
+- **Arquivos**: Manter arquivos com menos de 500 linhas
+- **Classes**: Seguir princípios SOLID

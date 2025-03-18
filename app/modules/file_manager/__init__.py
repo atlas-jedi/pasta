@@ -1,1 +1,1 @@
-# Arquivo de inicialização do módulo file_manager 
+# Initialization file for the file_manager module
