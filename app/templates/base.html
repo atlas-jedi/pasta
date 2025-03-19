@@ -18,11 +18,13 @@
   <body class="bg-light">
     <!-- Sidebar -->
     <div class="sidebar">
-      <a href="{{ url_for('file_manager.index') }}" 
+      {% if is_module_enabled('file_manager') %}
+      <a href="{{ url_for_if_exists('file_manager.index') }}" 
          class="sidebar-item module-link {% if request.blueprint == 'file_manager' %}active{% endif %} text-decoration-none"
          data-module="file_manager">
         <i class="bi bi-folder"></i>
       </a>
+      {% endif %}
       <a href="{{ url_for('time_calculator.index') }}" 
          class="sidebar-item module-link {% if request.blueprint == 'time_calculator' %}active{% endif %} text-decoration-none"
          data-module="time_calculator">

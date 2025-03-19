@@ -38,11 +38,38 @@ def create_app(test_config=None):
             api_secret=app.config['CLOUDINARY']['api_secret'],
         )
 
+    # Add custom Jinja2 functions to handle modules that might be disabled
+    @app.context_processor
+    def inject_utility_functions():
+        """Add utility functions to Jinja2 context."""
+        def url_for_if_exists(endpoint, **values):
+            from flask import url_for
+            from werkzeug.routing.exceptions import BuildError
+            try:
+                return url_for(endpoint, **values)
+            except BuildError:
+                # If the endpoint doesn't exist, return '#' to avoid breaking the template
+                app.logger.warning(
+                    f'Attempted to generate URL for non-existent endpoint: {endpoint}'
+                )
+                return '#'
+        
+        return dict(
+            url_for_if_exists=url_for_if_exists,
+            is_module_enabled=lambda module: app.config.get(f'ENABLE_{module.upper()}', True)
+        )
+
     # Register blueprints
-    from app.modules.file_manager.routes import file_manager_bp
     from app.modules.time_calculator.routes import time_calculator_bp
 
-    app.register_blueprint(file_manager_bp)
     app.register_blueprint(time_calculator_bp)
+
+    # Register file manager blueprint only if enabled
+    if app.config.get('ENABLE_FILE_MANAGER', True):
+        from app.modules.file_manager.routes import file_manager_bp
+
+        app.register_blueprint(file_manager_bp)
+    else:
+        app.logger.info('File manager module is disabled for this environment')
 
     return app

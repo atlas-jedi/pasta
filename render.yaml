@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: pasta-homologacao
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "app:create_app()" --timeout 120
+    envVars:
+      - key: FLASK_ENV
+        value: homologation
+      - key: ENABLE_FILE_MANAGER
+        value: false
+      - key: SECRET_KEY
+        sync: false # Não sincronizar - o Render vai gerar um valor secreto
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false # Usar o valor do dashboard do Render
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+    autoDeploy: false # Desabilitar deploy automático do Render para usar GitHub Actions

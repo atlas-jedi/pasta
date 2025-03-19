@@ -11,4 +11,5 @@ flake8-quotes==3.4.0
 black==24.2.0
 autopep8==2.0.4
 isort==5.13.2
-pytz==2024.1 
+pytz==2024.1
+gunicorn==21.2.0 

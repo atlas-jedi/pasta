@@ -89,15 +89,77 @@ pasta/
    # Edite o arquivo .env com suas configurações
    ```
 
-## Execução
+## Executando em Diferentes Ambientes
 
-Para iniciar a aplicação em modo de desenvolvimento:
+A aplicação pode ser executada em diferentes ambientes, cada um com suas próprias configurações:
 
-```
+### Ambiente de Desenvolvimento (padrão)
+
+```bash
 python run.py
 ```
 
-A aplicação estará disponível em `http://localhost:8000`.
+### Ambiente de Homologação
+
+Neste ambiente, o módulo de gestão de arquivos está desabilitado por padrão:
+
+```bash
+python run.py homologation
+```
+
+Para ativar o módulo de gestão de arquivos no ambiente de homologação, edite o arquivo `.env.homologation` e defina:
+
+```
+ENABLE_FILE_MANAGER=true
+```
+
+### Ambiente de Produção
+
+```bash
+python run.py production
+```
+
+## CI/CD e Deploy Automático
+
+O projeto utiliza GitHub Actions para automação de CI/CD, facilitando o processo de validação de código e deploy na nuvem.
+
+### Esteira de Homologação
+
+Uma esteira automatizada está configurada para monitorar a branch `hom` do repositório:
+
+1. Quando uma alteração é detectada, a esteira executa automaticamente:
+   - Validação de código com Flake8
+   - Execução dos testes com pytest
+   - Deploy automático no ambiente de homologação (Render)
+
+#### Pré-requisitos para o Deploy Automático
+
+Para configurar o deploy automático, você precisará:
+
+1. Uma conta no [Render](https://render.com/) (plano gratuito)
+2. Configurar as seguintes secrets no seu repositório GitHub:
+   - `RENDER_API_KEY`: Sua chave de API do Render
+   - `RENDER_SERVICE_ID`: O ID do serviço criado no Render
+
+#### Processo Manual de Deploy
+
+Se necessário, você também pode fazer o deploy manual:
+
+```bash
+# Configurar o ambiente de homologação
+cp .env.homologation .env
+
+# Deploy para o Render usando a CLI
+render deploy --service-id "seu-service-id"
+```
+
+#### Acessando o Ambiente de Homologação
+
+Após o deploy, o ambiente de homologação estará disponível em:
+
+```
+https://pasta-homologacao.onrender.com
+```
 
 ## Testes
 
