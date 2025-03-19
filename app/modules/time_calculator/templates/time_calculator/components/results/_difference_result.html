@@ -1,0 +1,45 @@
+{# 
+  Componente para exibição de resultado de diferença de tempo
+  
+  Parâmetros:
+  - diff_hours: Horas de diferença
+  - diff_minutes: Minutos de diferença
+  - diff_seconds: Segundos de diferença
+  - total_seconds: Total em segundos
+  - total_minutes: Total em minutos
+  - total_hours: Total em horas
+  - total_days: Total em dias
+  - total_weeks: Total em semanas
+#}
+
+{% call "time_calculator/components/_result_card.html" %}
+  <div class="row">
+    <div class="col-md-6">
+      <p class="mb-1">Formatado: <strong>{{ diff_hours }} horas, {{ diff_minutes }} minutos e {{ diff_seconds }} segundos</strong></p>
+    </div>
+    <div class="col-md-6">
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Segundos
+          <span class="badge bg-primary rounded-pill">{{ total_seconds }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Minutos
+          <span class="badge bg-primary rounded-pill">{{ total_minutes }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Horas
+          <span class="badge bg-primary rounded-pill">{{ total_hours }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Dias
+          <span class="badge bg-primary rounded-pill">{{ total_days }}</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          Semanas
+          <span class="badge bg-primary rounded-pill">{{ total_weeks }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+{% endcall %} 

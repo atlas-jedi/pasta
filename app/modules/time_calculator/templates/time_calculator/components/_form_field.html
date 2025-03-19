@@ -1,0 +1,47 @@
+{# 
+  Componente para campo de formulário reutilizável
+  
+  Parâmetros:
+  - label: Texto do label (obrigatório)
+  - id: ID do campo (obrigatório)
+  - name: Nome do campo (obrigatório)
+  - type: Tipo de campo (text, number, datetime-local, select) (padrão: text)
+  - placeholder: Placeholder do campo (opcional)
+  - value: Valor atual do campo (opcional)
+  - options: Lista de opções para selects no formato [{value, text, selected}] (opcional)
+  - min: Valor mínimo para campos numéricos (opcional)
+  - max: Valor máximo para campos numéricos (opcional)
+  - step: Intervalo para campos numéricos (opcional)
+  - classes: Classes adicionais para o campo (opcional)
+  - help_text: Texto de ajuda abaixo do campo (opcional)
+#}
+
+<div class="{% if not col_class %}col-md-6{% else %}{{ col_class }}{% endif %}">
+  <label for="{{ id }}" class="form-label">{{ label }}</label>
+  
+  {% if type == 'select' %}
+    <select class="form-select {% if classes %}{{ classes }}{% endif %}" id="{{ id }}" name="{{ name }}">
+      {% for option in options %}
+        <option value="{{ option.value }}" {% if option.selected %}selected{% endif %}>{{ option.text }}</option>
+      {% endfor %}
+    </select>
+  {% elif type == 'textarea' %}
+    <textarea class="form-control {% if classes %}{{ classes }}{% endif %}" id="{{ id }}" name="{{ name }}" 
+      {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+      rows="3">{{ value|default('') }}</textarea>
+  {% else %}
+    <input type="{{ type|default('text') }}" 
+           class="form-control {% if classes %}{{ classes }}{% endif %}" 
+           id="{{ id }}" 
+           name="{{ name }}" 
+           {% if placeholder %}placeholder="{{ placeholder }}"{% endif %} 
+           {% if value %}value="{{ value }}"{% endif %}
+           {% if min is defined %}min="{{ min }}"{% endif %}
+           {% if max is defined %}max="{{ max }}"{% endif %}
+           {% if step is defined %}step="{{ step }}"{% endif %}>
+  {% endif %}
+  
+  {% if help_text %}
+    <div class="form-text">{{ help_text }}</div>
+  {% endif %}
+</div> 

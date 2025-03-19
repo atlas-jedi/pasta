@@ -1,0 +1,84 @@
+{# 
+  Componente para a tab Converter
+  
+  Parâmetros:
+  - calculation_type: Tipo de cálculo atual
+  - value: Valor a ser convertido
+  - from_unit: Unidade de origem
+  - to_unit: Unidade de destino
+  - result: Resultado da conversão
+#}
+
+<div class="tab-pane fade {% if calculation_type == 'convert_units' %}show active{% endif %}" 
+     id="convert" role="tabpanel" aria-labelledby="convert-tab">
+  <h5 class="mb-3">Converter Unidades de Tempo</h5>
+  <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
+    <input type="hidden" name="calculation_type" value="convert_units">
+    
+    {% with
+      label="Valor",
+      id="value",
+      name="value",
+      type="number",
+      step="0.01",
+      min="0",
+      value=value|default('0'),
+      col_class="col-md-4"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with
+      label="De",
+      id="from_unit",
+      name="from_unit",
+      type="select",
+      options=[
+        {"value": "seconds", "text": "Segundos", "selected": from_unit == "seconds"},
+        {"value": "minutes", "text": "Minutos", "selected": from_unit == "minutes"},
+        {"value": "hours", "text": "Horas", "selected": from_unit == "hours" or not from_unit},
+        {"value": "days", "text": "Dias", "selected": from_unit == "days"},
+        {"value": "weeks", "text": "Semanas", "selected": from_unit == "weeks"},
+        {"value": "months", "text": "Meses", "selected": from_unit == "months"},
+        {"value": "years", "text": "Anos", "selected": from_unit == "years"}
+      ],
+      col_class="col-md-4"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with
+      label="Para",
+      id="to_unit",
+      name="to_unit",
+      type="select",
+      options=[
+        {"value": "seconds", "text": "Segundos", "selected": to_unit == "seconds"},
+        {"value": "minutes", "text": "Minutos", "selected": to_unit == "minutes"},
+        {"value": "hours", "text": "Horas", "selected": to_unit == "hours"},
+        {"value": "days", "text": "Dias", "selected": to_unit == "days" or not to_unit},
+        {"value": "weeks", "text": "Semanas", "selected": to_unit == "weeks"},
+        {"value": "months", "text": "Meses", "selected": to_unit == "months"},
+        {"value": "years", "text": "Anos", "selected": to_unit == "years"}
+      ],
+      col_class="col-md-4"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with text="Converter" %}
+      {% include "time_calculator/components/_submit_button.html" with context %}
+    {% endwith %}
+  </form>
+  
+  {% if result is defined and calculation_type == 'convert_units' %}
+    {% with
+      value=value,
+      from_unit=from_unit,
+      to_unit=to_unit,
+      result=result
+    %}
+      {% include "time_calculator/components/results/_convert_result.html" with context %}
+    {% endwith %}
+  {% endif %}
+</div> 

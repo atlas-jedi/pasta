@@ -1,0 +1,32 @@
+{# 
+  Componente para exibição de resultado de conversão de fuso horário
+  
+  Parâmetros:
+  - source_timezone: Fuso horário de origem
+  - source_time: Hora de origem
+  - conversions: Lista de conversões no formato [{timezone, time, dst_active}]
+#}
+
+{% call "time_calculator/components/_result_card.html" %}
+  <p>Hora em {{ source_timezone }}: <strong>{{ source_time }}</strong></p>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Fuso Horário</th>
+          <th>Hora</th>
+          <th>Horário de Verão</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for conv in conversions %}
+          <tr>
+            <td>{{ conv.timezone }}</td>
+            <td>{{ conv.time }}</td>
+            <td>{% if conv.dst_active %}<i class="bi bi-check text-success"></i>{% else %}<i class="bi bi-x text-danger"></i>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endcall %} 

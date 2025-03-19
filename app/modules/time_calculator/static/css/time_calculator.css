@@ -1,0 +1,76 @@
+/**
+ * Estilos para a Calculadora de Tempo
+ */
+
+/* Estilos para menus de navegação */
+.desktop-menu {
+  border-bottom: none;
+}
+
+.desktop-menu .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mobile-menu {
+  margin-bottom: 15px;
+}
+
+/* Estilos para componentes específicos */
+.toggle-switch-container {
+  margin-bottom: 1rem;
+}
+
+/* Estilos para a tabela de resultados de timezone */
+.timezone-result-table {
+  margin-top: 1rem;
+}
+
+.timezone-result-table th {
+  font-weight: 600;
+}
+
+/* Estilos para os componentes de cronômetro e timer */
+.timer-container,
+.stopwatch-container {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.time-display {
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: monospace;
+  margin: 1rem 0;
+}
+
+.timer-controls,
+.stopwatch-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.lap-times {
+  margin-top: 1.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Responsividade */
+@media (max-width: 767.98px) {
+  .time-display {
+    font-size: 2.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+  
+  .timer-controls,
+  .stopwatch-controls {
+    flex-wrap: wrap;
+  }
+} 

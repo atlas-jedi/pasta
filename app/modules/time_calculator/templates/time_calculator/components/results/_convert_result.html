@@ -1,0 +1,13 @@
+{# 
+  Componente para exibição de resultado de conversão
+  
+  Parâmetros:
+  - value: Valor convertido
+  - from_unit: Unidade de origem
+  - to_unit: Unidade de destino
+  - result: Resultado da conversão
+#}
+
+{% call "time_calculator/components/_result_card.html" %}
+  <p>{{ value }} {{ from_unit }} = <strong>{{ result }} {{ to_unit }}</strong></p>
+{% endcall %} 

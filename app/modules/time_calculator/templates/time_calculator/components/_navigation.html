@@ -1,0 +1,86 @@
+{# 
+  Componente para navegação da calculadora de tempo
+  
+  Parâmetros:
+  - active_tab: Tab ativa (add_subtract, difference, convert_units, divide_interval, timezone_convert, timer, stopwatch)
+#}
+
+<!-- Desktop Navigation tabs - visível apenas em telas maiores -->
+<ul class="nav nav-tabs d-none d-md-flex desktop-menu" id="timeCalcTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if not active_tab or active_tab == 'add_subtract' %}active{% endif %}" 
+            id="add-subtract-tab" data-bs-toggle="tab" data-bs-target="#add-subtract" 
+            type="button" role="tab" aria-selected="true">
+      <i class="bi bi-plus-slash-minus"></i> Adicionar/Subtrair
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'difference' %}active{% endif %}" 
+            id="difference-tab" data-bs-toggle="tab" data-bs-target="#difference" 
+            type="button" role="tab" aria-selected="false">
+      <i class="bi bi-arrows-angle-expand"></i> Diferença
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'convert_units' %}active{% endif %}" 
+            id="convert-tab" data-bs-toggle="tab" data-bs-target="#convert" 
+            type="button" role="tab" aria-selected="false">
+      <i class="bi bi-arrow-left-right"></i> Converter
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'divide_interval' %}active{% endif %}" 
+            id="divide-tab" data-bs-toggle="tab" data-bs-target="#divide" 
+            type="button" role="tab" aria-selected="false">
+      <i class="bi bi-scissors"></i> Dividir Intervalo
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'timezone_convert' %}active{% endif %}" 
+            id="timezone-tab" data-bs-toggle="tab" data-bs-target="#timezone" 
+            type="button" role="tab" aria-selected="false">
+      <i class="bi bi-globe"></i> Fusos Horários
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'timer' %}active{% endif %}" 
+            id="timer-tab" data-bs-toggle="tab" data-bs-target="#timer" 
+            type="button" role="tab" aria-selected="false">
+      <i class="bi bi-alarm"></i> Timer
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link {% if active_tab == 'stopwatch' %}active{% endif %}" 
+            id="stopwatch-tab" data-bs-toggle="tab" data-bs-target="#stopwatch" 
+            type="button" role="tab" aria-selected="false">
+      <i class="bi bi-stopwatch"></i> Cronômetro
+    </button>
+  </li>
+</ul>
+
+<!-- Mobile Navigation Dropdown - visível apenas em telas menores -->
+<div class="mobile-tabs d-md-none mobile-menu mb-3">
+  <select class="form-select mobile-tab-selector">
+    <option value="add-subtract" {% if not active_tab or active_tab == 'add_subtract' %}selected{% endif %}>
+      Adicionar/Subtrair Tempo
+    </option>
+    <option value="difference" {% if active_tab == 'difference' %}selected{% endif %}>
+      Calcular Diferença
+    </option>
+    <option value="convert" {% if active_tab == 'convert_units' %}selected{% endif %}>
+      Converter Unidades
+    </option>
+    <option value="divide" {% if active_tab == 'divide_interval' %}selected{% endif %}>
+      Dividir Intervalo
+    </option>
+    <option value="timezone" {% if active_tab == 'timezone_convert' %}selected{% endif %}>
+      Fusos Horários
+    </option>
+    <option value="timer" {% if active_tab == 'timer' %}selected{% endif %}>
+      Timer
+    </option>
+    <option value="stopwatch" {% if active_tab == 'stopwatch' %}selected{% endif %}>
+      Cronômetro
+    </option>
+  </select>
+</div> 

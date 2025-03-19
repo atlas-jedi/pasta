@@ -1,0 +1,73 @@
+{# 
+  Componente para a tab Diferença
+  
+  Parâmetros:
+  - calculation_type: Tipo de cálculo atual
+  - include_date: Se deve incluir data
+  - start_time_diff: Hora inicial
+  - end_time_diff: Hora final
+  - diff_hours: Horas de diferença
+  - diff_minutes: Minutos de diferença
+  - diff_seconds: Segundos de diferença
+  - total_seconds, total_minutes, total_hours, total_days, total_weeks: Totais em diferentes unidades
+#}
+
+<div class="tab-pane fade {% if calculation_type == 'difference' %}show active{% endif %}" 
+     id="difference" role="tabpanel" aria-labelledby="difference-tab">
+  <h5 class="mb-3">Calcular Diferença de Tempo</h5>
+  <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
+    <input type="hidden" name="calculation_type" value="difference">
+    
+    {% with
+      id="include_date",
+      name="include_date",
+      label="Incluir data",
+      checked=include_date
+    %}
+      {% include "time_calculator/components/_toggle_switch.html" with context %}
+    {% endwith %}
+    
+    {% with 
+      label="Data e Hora Inicial (YYYY-MM-DD HH:MM)" if include_date else "Hora Inicial (HH:MM)",
+      id="start_time_diff",
+      name="start_time_diff",
+      type="datetime-local" if include_date else "text",
+      placeholder="2023-01-01 09:00" if include_date else "09:00",
+      value=start_time_diff|default(''),
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with 
+      label="Data e Hora Final (YYYY-MM-DD HH:MM)" if include_date else "Hora Final (HH:MM)",
+      id="end_time_diff",
+      name="end_time_diff",
+      type="datetime-local" if include_date else "text",
+      placeholder="2023-01-02 17:30" if include_date else "17:30",
+      value=end_time_diff|default(''),
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with text="Calcular Diferença" %}
+      {% include "time_calculator/components/_submit_button.html" with context %}
+    {% endwith %}
+  </form>
+  
+  {% if diff_hours is defined and diff_minutes is defined and calculation_type == 'difference' %}
+    {% with
+      diff_hours=diff_hours,
+      diff_minutes=diff_minutes,
+      diff_seconds=diff_seconds,
+      total_seconds=total_seconds,
+      total_minutes=total_minutes,
+      total_hours=total_hours,
+      total_days=total_days,
+      total_weeks=total_weeks
+    %}
+      {% include "time_calculator/components/results/_difference_result.html" with context %}
+    {% endwith %}
+  {% endif %}
+</div> 

@@ -1,0 +1,17 @@
+{# 
+  Componente para exibição de resultado de divisão de intervalo
+  
+  Parâmetros:
+  - intervals: Lista de intervalos resultantes
+  - divisions: Número de divisões
+  - division_duration: Duração de cada divisão
+#}
+
+{% call "time_calculator/components/_result_card.html" %}
+  <p>Intervalo dividido em {{ divisions }} partes iguais de <strong>{{ division_duration }}</strong> cada:</p>
+  <ol class="list-group list-group-numbered">
+    {% for interval in intervals %}
+      <li class="list-group-item">{{ interval }}</li>
+    {% endfor %}
+  </ol>
+{% endcall %} 

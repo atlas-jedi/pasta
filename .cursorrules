@@ -2,6 +2,55 @@
 
 Este arquivo define as regras de codificação e estilo que devem ser seguidas no projeto. Estas regras ajudam a manter a consistência e a qualidade do código.
 
+## Estrutura de Arquivos e Templates
+
+### Organização de Templates
+
+- **Estrutura base**: A estrutura correta para templates segue a convenção:
+  - `app/templates/` - Templates globais da aplicação (como base.html)
+  - `app/modules/<module_name>/templates/<module_name>/` - Templates específicos de cada módulo
+  - `app/modules/<module_name>/templates/<module_name>/components/` - Componentes reutilizáveis
+- **Componentização**: Dividir templates grandes em componentes menores reutilizáveis
+  - Prefixar componentes parciais com underscore (\_nome_componente.html)
+  - Cada componente deve ter uma única responsabilidade
+  - Passar dados para componentes via parâmetros de include
+- **Localização de conteúdo**: Sempre verificar se está editando o arquivo correto observando o caminho completo
+- **Inclusão de templates**: Ao incluir arquivos de template, usar o caminho completo começando pelo nome do módulo
+
+### Estrutura de Módulos
+
+- **Módulos autocontidos**: Cada módulo deve ter suas próprias pastas para templates, static e scripts
+- **Convenção de nomes**: Manter consistência entre o nome do módulo e suas subpastas
+- **Organização de JavaScript**: Separar código JavaScript em arquivos modulares com funções específicas
+
+## Regras de Estilo Frontend
+
+### HTML/Templates
+
+- **Indentação**: 2 espaços
+- **Classes CSS**: Usar kebab-case (ex: `class="mobile-tab-selector"`)
+- **IDs**: Usar kebab-case (ex: `id="time-calculator"`)
+- **Responsividade**: Todo componente deve ter versões desktop e mobile
+- **Componentes**: Extrair padrões repetitivos em componentes reutilizáveis
+
+### CSS
+
+- **Organização**: Agrupar estilos por componente
+- **Media queries**: Usar breakpoints padrão do Bootstrap (576px, 768px, 992px, 1200px)
+- **Prefixos móveis**: Sempre colocar regras mobile dentro de media queries
+- **Seleção por classes**: Preferir seleção por classes ao invés de IDs ou tags
+- **Escopo**: Limitar estilos de componentes a seus próprios arquivos/escopo
+
+### JavaScript
+
+- **Indentação**: 2 espaços
+- **Variáveis**: Usar camelCase
+- **Constantes**: Usar UPPER_SNAKE_CASE
+- **Funções**: Usar camelCase
+- **Modularização**: Dividir código JavaScript em módulos lógicos
+- **DOM Ready**: Sempre envolver código de inicialização em eventos DOMContentLoaded
+- **Namespaces**: Usar namespaces para organizar funções relacionadas (ex: TimeCalc.formHandler)
+
 ## Regras de Estilo Python
 
 ### Formatação de Código
@@ -40,6 +89,16 @@ Este arquivo define as regras de codificação e estilo que devem ser seguidas n
 - **Convenção**: Seguir a convenção Google para docstrings
 - **Escopo**: Todas as funções públicas, classes e métodos devem ter docstrings
 - **Exceções**: Módulos e pacotes públicos não precisam de docstrings (D100, D104)
+
+## Regras de Componentização
+
+- **Componente único**: Cada componente deve ter uma única responsabilidade
+- **Reusabilidade**: Priorizar componentes que possam ser reutilizados
+- **Parâmetros**: Componentes devem receber parâmetros explícitos
+- **Documentação**: Documentar parâmetros esperados no topo do arquivo de componente
+- **Tamanho máximo**: Limitar componentes a no máximo 100 linhas
+- **Especificidade**: Evitar dependências externas ao componente
+- **Comentários**: Incluir comentários explicativos em componentes complexos
 
 ## Regras do Flake8
 
