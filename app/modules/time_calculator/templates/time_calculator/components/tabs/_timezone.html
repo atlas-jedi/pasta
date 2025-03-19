@@ -1,0 +1,74 @@
+{# 
+  Componente para a tab Fusos Horários
+  
+  Parâmetros:
+  - calculation_type: Tipo de cálculo atual
+  - source_time: Hora de origem
+  - source_timezone: Fuso horário de origem
+  - target_timezones: Lista de fusos horários de destino
+  - timezones: Lista completa de fusos horários disponíveis
+  - conversions: Lista de conversões com resultados
+#}
+
+<div class="tab-pane fade {% if calculation_type == 'timezone_convert' %}show active{% endif %}" 
+     id="timezone" role="tabpanel" aria-labelledby="timezone-tab">
+  <h5 class="mb-3">Converter Fusos Horários</h5>
+  <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
+    <input type="hidden" name="calculation_type" value="timezone_convert">
+    
+    {% with
+      label="Hora (HH:MM)",
+      id="source_time",
+      name="source_time",
+      placeholder="Ex: 14:30",
+      value=source_time|default(''),
+      help_text="Deixe em branco para usar a hora atual",
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    <div class="col-md-6">
+      <label for="source_timezone" class="form-label">Fuso Horário de Origem</label>
+      <select class="form-select" id="source_timezone" name="source_timezone">
+        {% for tz in timezones %}
+          <option value="{{ tz }}" {% if source_timezone == tz or (not source_timezone and tz == 'America/Sao_Paulo') %}selected{% endif %}>{{ tz }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="col-12">
+      <label class="form-label">Fusos Horários de Destino</label>
+      <div class="input-group mb-2">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" id="timezone-search" placeholder="Filtrar fusos horários...">
+        <button type="button" class="btn btn-outline-secondary" id="clear-timezone-search">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="d-flex justify-content-between mb-1">
+        <small class="text-muted" id="timezone-counter"></small>
+        <small class="text-muted">Segure Ctrl para selecionar múltiplos fusos horários</small>
+      </div>
+      <select class="form-select" id="target_timezones" name="target_timezones[]" multiple size="6">
+        {% for tz in timezones %}
+          <option value="{{ tz }}" {% if target_timezones and tz in target_timezones %}selected{% endif %}>{{ tz }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    {% with text="Converter" %}
+      {% include "time_calculator/components/_submit_button.html" with context %}
+    {% endwith %}
+  </form>
+  
+  {% if conversions is defined and calculation_type == 'timezone_convert' %}
+    {% with
+      source_time=source_time,
+      source_timezone=source_timezone,
+      conversions=conversions
+    %}
+      {% include "time_calculator/components/results/_timezone_result.html" with context %}
+    {% endwith %}
+  {% endif %}
+</div> 

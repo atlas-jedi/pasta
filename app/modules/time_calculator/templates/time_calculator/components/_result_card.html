@@ -1,0 +1,14 @@
+{# 
+  Componente para exibição de resultados em card
+  
+  Parâmetros:
+  - title: Título do resultado (padrão: "Resultado:")
+  - type: Tipo de alerta (success, danger, warning, info) (padrão: "success")
+  - id: ID opcional para o card (opcional)
+  - classes: Classes adicionais para o card (opcional)
+#}
+
+<div class="mt-4 alert alert-{{ type|default('success') }} {% if classes %}{{ classes }}{% endif %}" {% if id %}id="{{ id }}"{% endif %}>
+  <h5>{{ title|default('Resultado:') }}</h5>
+  {{ caller() }}
+</div> 

@@ -1,0 +1,12 @@
+{# 
+  Componente para exibição de resultado de adição/subtração
+  
+  Parâmetros:
+  - result_time: Hora resultante
+#}
+
+{% if result_time %}
+  {% call "time_calculator/components/_result_card.html" %}
+    <p>A hora resultante é: <strong>{{ result_time }}</strong></p>
+  {% endcall %}
+{% endif %} 

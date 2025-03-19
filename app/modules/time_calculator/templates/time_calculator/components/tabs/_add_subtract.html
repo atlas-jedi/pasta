@@ -1,0 +1,80 @@
+{# 
+  Componente para a tab Adicionar/Subtrair
+  
+  Parâmetros:
+  - calculation_type: Tipo de cálculo atual
+  - start_time: Hora inicial
+  - operation: Operação (add/subtract)
+  - time_input: Quantidade de tempo
+  - time_unit: Unidade de tempo
+  - result_time: Resultado do cálculo
+#}
+
+<div class="tab-pane fade {% if not calculation_type or calculation_type == 'add_subtract' %}show active{% endif %}" 
+     id="add-subtract" role="tabpanel" aria-labelledby="add-subtract-tab">
+  <h5 class="mb-3">Adicionar ou Subtrair Tempo</h5>
+  <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
+    <input type="hidden" name="calculation_type" value="add_subtract">
+    
+    {% with 
+      label="Hora Inicial (HH:MM)", 
+      id="start_time", 
+      name="start_time", 
+      placeholder="Ex: 14:30",
+      value=start_time|default(''),
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with 
+      label="Operação", 
+      id="operation", 
+      name="operation", 
+      type="select",
+      options=[
+        {"value": "add", "text": "Adicionar", "selected": operation == "add"},
+        {"value": "subtract", "text": "Subtrair", "selected": operation == "subtract"}
+      ],
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with 
+      label="Quantidade", 
+      id="time_input", 
+      name="time_input", 
+      type="number",
+      step="0.01",
+      min="0",
+      value=time_input|default('0'),
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with 
+      label="Unidade", 
+      id="time_unit", 
+      name="time_unit", 
+      type="select",
+      options=[
+        {"value": "seconds", "text": "Segundos", "selected": time_unit == "seconds"},
+        {"value": "minutes", "text": "Minutos", "selected": time_unit == "minutes"},
+        {"value": "hours", "text": "Horas", "selected": time_unit == "hours" or not time_unit},
+        {"value": "days", "text": "Dias", "selected": time_unit == "days"},
+        {"value": "weeks", "text": "Semanas", "selected": time_unit == "weeks"}
+      ],
+      col_class="col-md-6"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% include "time_calculator/components/_submit_button.html" %}
+  </form>
+  
+  {% if result_time and calculation_type == 'add_subtract' %}
+    {% include "time_calculator/components/results/_add_subtract_result.html" %}
+  {% endif %}
+</div> 

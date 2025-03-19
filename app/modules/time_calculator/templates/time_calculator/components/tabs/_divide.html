@@ -1,0 +1,80 @@
+{# 
+  Componente para a tab Dividir Intervalo
+  
+  Parâmetros:
+  - calculation_type: Tipo de cálculo atual
+  - include_date_interval: Se deve incluir data
+  - start_interval: Hora inicial
+  - end_interval: Hora final
+  - divisions: Número de divisões
+  - intervals: Lista de intervalos resultantes
+  - division_duration: Duração de cada divisão
+#}
+
+<div class="tab-pane fade {% if calculation_type == 'divide_interval' %}show active{% endif %}" 
+     id="divide" role="tabpanel" aria-labelledby="divide-tab">
+  <h5 class="mb-3">Dividir Intervalo de Tempo</h5>
+  <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
+    <input type="hidden" name="calculation_type" value="divide_interval">
+    
+    {% with
+      id="include_date_interval",
+      name="include_date_interval",
+      label="Incluir data",
+      checked=include_date_interval
+    %}
+      {% include "time_calculator/components/_toggle_switch.html" with context %}
+    {% endwith %}
+    
+    {% with
+      label="Data e Hora Inicial (YYYY-MM-DD HH:MM)" if include_date_interval else "Hora Inicial (HH:MM)",
+      id="start_interval",
+      name="start_interval",
+      type="datetime-local" if include_date_interval else "text",
+      placeholder="2023-01-01 09:00" if include_date_interval else "09:00",
+      value=start_interval|default(''),
+      col_class="col-md-5"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with
+      label="Data e Hora Final (YYYY-MM-DD HH:MM)" if include_date_interval else "Hora Final (HH:MM)",
+      id="end_interval",
+      name="end_interval",
+      type="datetime-local" if include_date_interval else "text",
+      placeholder="2023-01-02 17:30" if include_date_interval else "17:30",
+      value=end_interval|default(''),
+      col_class="col-md-5"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with
+      label="Divisões",
+      id="divisions",
+      name="divisions",
+      type="number",
+      min="2",
+      max="50",
+      value=divisions|default('2'),
+      col_class="col-md-2"
+    %}
+      {% include "time_calculator/components/_form_field.html" with context %}
+    {% endwith %}
+    
+    {% with text="Dividir Intervalo" %}
+      {% include "time_calculator/components/_submit_button.html" with context %}
+    {% endwith %}
+  </form>
+  
+  {% if intervals is defined and calculation_type == 'divide_interval' %}
+    {% with
+      divisions=divisions,
+      division_duration=division_duration,
+      intervals=intervals
+    %}
+      {% include "time_calculator/components/results/_divide_result.html" with context %}
+    {% endwith %}
+  {% endif %}
+</div> 
