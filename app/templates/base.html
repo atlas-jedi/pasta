@@ -18,10 +18,14 @@
   <body class="bg-light">
     <!-- Sidebar -->
     <div class="sidebar">
-      <a href="{{ url_for('file_manager.index') }}" class="sidebar-item {% if request.blueprint == 'file_manager' %}active{% endif %} text-decoration-none">
+      <a href="{{ url_for('file_manager.index') }}" 
+         class="sidebar-item module-link {% if request.blueprint == 'file_manager' %}active{% endif %} text-decoration-none"
+         data-module="file_manager">
         <i class="bi bi-folder"></i>
       </a>
-      <a href="{{ url_for('time_calculator.index') }}" class="sidebar-item {% if request.blueprint == 'time_calculator' %}active{% endif %} text-decoration-none">
+      <a href="{{ url_for('time_calculator.index') }}" 
+         class="sidebar-item module-link {% if request.blueprint == 'time_calculator' %}active{% endif %} text-decoration-none"
+         data-module="time_calculator">
         <i class="bi bi-clock"></i>
       </a>
     </div>
@@ -29,11 +33,13 @@
     <div class="container mt-4">
       <div class="card shadow">
         <div class="d-flex card-header justify-content-between">
-          <h4 class="mb-0">{% block header_title %}{% endblock %}</h4>
-          {% block header_actions %}{% endblock %}
+          <h4 class="mb-0" id="page-header-title">{% block header_title %}{% endblock %}</h4>
+          <div id="page-header-actions">{% block header_actions %}{% endblock %}</div>
         </div>
         <div class="card-body">
-          {% block content %}{% endblock %}
+          <div id="content-container">
+            {% block content %}{% endblock %}
+          </div>
         </div>
       </div>
     </div>
@@ -41,6 +47,70 @@
     {% block modals %}{% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Função para carregar um módulo via AJAX
+        function loadModule(moduleUrl, moduleName) {
+          // Mostrar indicador de carregamento
+          document.getElementById('content-container').innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div></div>';
+          
+          // Carregar o conteúdo
+          axios.get(moduleUrl, {
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(function(response) {
+            // Atualizar a classe ativa
+            document.querySelectorAll('.module-link').forEach(function(link) {
+              link.classList.remove('active');
+            });
+            document.querySelector(`.module-link[data-module="${moduleName}"]`).classList.add('active');
+            
+            // Atualizar o conteúdo
+            document.getElementById('content-container').innerHTML = response.data;
+            
+            // Atualizar URL sem recarregar a página
+            history.pushState({}, '', moduleUrl);
+            
+            // Ativar scripts dentro do conteúdo carregado
+            const scripts = document.getElementById('content-container').querySelectorAll('script');
+            scripts.forEach(function(script) {
+              const newScript = document.createElement('script');
+              if (script.src) {
+                newScript.src = script.src;
+              } else {
+                newScript.textContent = script.textContent;
+              }
+              document.body.appendChild(newScript);
+              newScript.remove();
+            });
+          })
+          .catch(function(error) {
+            console.error('Erro ao carregar módulo:', error);
+            document.getElementById('content-container').innerHTML = '<div class="alert alert-danger">Erro ao carregar o módulo. Tente novamente.</div>';
+          });
+        }
+        
+        // Adicionar event listener para todos os links de módulo
+        document.querySelectorAll('.module-link').forEach(function(link) {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const moduleUrl = this.getAttribute('href');
+            const moduleName = this.dataset.module;
+            loadModule(moduleUrl, moduleName);
+          });
+        });
+        
+        // Gerenciar navegação do histórico
+        window.addEventListener('popstate', function() {
+          location.reload();
+        });
+      });
+    </script>
+    
     {% block extra_js %}{% endblock %}
   </body>
 </html> 

@@ -21,6 +21,11 @@ def index():
     Returns:
         str: Rendered HTML template for the time calculator interface.
     """
+    # Se for uma requisição AJAX, renderizar apenas o conteúdo
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('time_calculator/content.html')
+    
+    # Renderização normal para carregamento de página completa
     return render_template('time_calculator.html')
 
 
@@ -53,21 +58,29 @@ def calculate_time():
         # Format the result
         result_time = result_datetime.strftime('%H:%M')
 
-        return render_template(
-            'time_calculator.html',
-            calculation_type=calculation_type,
-            start_time=start_time,
-            operation=operation,
-            hours=hours,
-            minutes=minutes,
-            result_time=result_time,
-        )
+        context = {
+            'calculation_type': calculation_type,
+            'start_time': start_time,
+            'operation': operation,
+            'hours': hours,
+            'minutes': minutes,
+            'result_time': result_time,
+        }
+        
+        # Determine which template to use based on request type
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render_template('time_calculator/content.html', **context)
+        return render_template('time_calculator.html', **context)
     except ValueError:
-        return render_template(
-            'time_calculator.html',
-            calculation_type=calculation_type,
-            error='Formato de hora inválido. Use HH:MM',
-        )
+        context = {
+            'calculation_type': calculation_type,
+            'error': 'Formato de hora inválido. Use HH:MM',
+        }
+        
+        # Determine which template to use based on request type
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render_template('time_calculator/content.html', **context)
+        return render_template('time_calculator.html', **context)
 
 
 @time_calculator_bp.route('/calculate-difference', methods=['POST'])
@@ -103,17 +116,25 @@ def calculate_time_difference():
         diff_hours = int(total_seconds // 3600)
         diff_minutes = int((total_seconds % 3600) // 60)
 
-        return render_template(
-            'time_calculator.html',
-            calculation_type=calculation_type,
-            start_time_diff=start_time,
-            end_time_diff=end_time,
-            diff_hours=diff_hours,
-            diff_minutes=diff_minutes,
-        )
+        context = {
+            'calculation_type': calculation_type,
+            'start_time_diff': start_time,
+            'end_time_diff': end_time,
+            'diff_hours': diff_hours,
+            'diff_minutes': diff_minutes,
+        }
+        
+        # Determine which template to use based on request type
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render_template('time_calculator/content.html', **context)
+        return render_template('time_calculator.html', **context)
     except ValueError:
-        return render_template(
-            'time_calculator.html',
-            calculation_type=calculation_type,
-            error='Formato de hora inválido. Use HH:MM',
-        )
+        context = {
+            'calculation_type': calculation_type,
+            'error': 'Formato de hora inválido. Use HH:MM',
+        }
+        
+        # Determine which template to use based on request type
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return render_template('time_calculator/content.html', **context)
+        return render_template('time_calculator.html', **context)

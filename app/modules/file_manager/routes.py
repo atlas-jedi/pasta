@@ -21,6 +21,10 @@ file_manager_bp = Blueprint(
 def index():
     """List files and directories at the given path."""
     path = request.args.get('path', '')
+    
+    # Redireciona para /?path= quando acessar a rota /
+    if 'path' not in request.args:
+        return redirect(url_for('file_manager.index', path=''))
 
     # Get the current storage
     storage = get_storage_provider()
@@ -49,48 +53,29 @@ def index():
 
         # Ensure the values are numbers
         current_storage = {
-            'used': float(used),
-            'total': max(float(total), 1),  # Avoid division by zero
-            'name': str(name),
-            'is_active': True,  # Indicates this is the current storage
+            'name': name,
+            'used': used,
+            'total': total,
+            'percent': round((used / total) * 100, 2) if total > 0 else 0,
         }
-
         all_storages.append(current_storage)
 
     except Exception as e:
         current_app.logger.error(f'Error getting storage usage: {e}')
-        current_storage = {'used': 0, 'total': 1, 'name': 'Error Storage', 'is_active': True}
-        all_storages.append(current_storage)
+        all_storages.append({'name': 'Storage', 'used': 0, 'total': 1, 'percent': 0})
 
-    # In the future, you can add other storages to the all_storages list here
-    # Example:
-    # try:
-    #     other_storage = get_other_storage_provider()
-    #     other_storage_usage = other_storage.get_storage_usage()
-    #     all_storages.append({
-    #         'used': float(other_storage_usage.get('used', 0)),
-    #         'total': max(float(other_storage_usage.get('total', 1)), 1),
-    #         'name': str(other_storage_usage.get('name', 'Other Storage')),
-    #         'is_active': False
-    #     })
-    # except Exception as e:
-    #     current_app.logger.error(f'Error getting other storage usage: {e}')
+    context = {
+        'items': items,
+        'path': path,
+        'storage_info': all_storages,
+    }
 
-    # Get Cloudinary status from storage if it's CloudinaryStorage
-    cloudinary_status = getattr(storage, 'status_checker', None)
-    if cloudinary_status:
-        cloudinary_status = cloudinary_status.check_status()
-    else:
-        cloudinary_status = {'configured': False, 'online': False, 'error': False}
+    # If it's an AJAX request, render only the content
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render_template('content.html', **context)
 
-    return render_template(
-        'index.html',
-        items=items,
-        current_path=path,
-        cloudinary_status=cloudinary_status,
-        storage_usage=current_storage,  # Maintains compatibility with the current template
-        all_storages=all_storages,  # New variable for multiple storages
-    )
+    # Normal rendering for full page loading
+    return render_template('index.html', **context)
 
 
 @file_manager_bp.route('/upload', methods=['POST'])

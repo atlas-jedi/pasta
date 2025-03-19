@@ -1,0 +1,208 @@
+{% block header_actions %}
+<div class="container-fluid p-0">
+  <!-- Primeira linha: Indicador de status e botões (alinhados à direita) -->
+  <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+      <!-- Botões de ação -->
+      <div>
+        <button class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+          <i class="bi bi-upload"></i> Upload
+        </button>
+        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#mkdirModal">
+          <i class="bi bi-folder-plus"></i> Nova Pasta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segunda linha: Cards de armazenamento -->
+  <div class="storage-cards d-flex flex-wrap gap-3 justify-content-start my-3">
+    {% for storage in storage_info %}
+      <div class="storage-card border rounded p-2 bg-light">
+        <div class="d-flex align-items-center mb-1">
+          <h6 class="mb-0 me-2">
+            {% if storage.name == 'Cloudinary' %}
+              <i class="bi bi-cloud text-primary me-1"></i>
+            {% else %}
+              <i class="bi bi-hdd text-primary me-1"></i>
+            {% endif %}
+            {{ storage.name }}
+          </h6>
+        </div>
+        
+        <div class="storage-details mb-1">
+          <small class="text-muted">
+            {% set used_mb = (storage.used / 1024 / 1024)|round(2) %}
+            {% set total_mb = (storage.total / 1024 / 1024)|round(2) %}
+            <strong>{{ used_mb }}MB</strong> de {{ total_mb }}MB
+          </small>
+        </div>
+        
+        <div class="progress" style="height: 8px; width: 250px;">
+          {% set usage_percent = storage.percent %}
+          
+          <div class="progress-bar 
+            {% if usage_percent > 90 %}bg-danger
+            {% elif usage_percent > 70 %}bg-warning
+            {% else %}bg-success{% endif %}" 
+            role="progressbar" 
+            style="width: {{ usage_percent }}%" 
+            aria-valuenow="{{ usage_percent }}" 
+            aria-valuemin="0" 
+            aria-valuemax="100">
+          </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-1">
+          <small class="text-muted">{{ usage_percent }}% usado</small>
+          <small class="text-muted">
+            {% if usage_percent > 90 %}
+              <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Crítico</span>
+            {% elif usage_percent > 70 %}
+              <span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Atenção</span>
+            {% else %}
+              <span class="text-success"><i class="bi bi-check-circle"></i> OK</span>
+            {% endif %}
+          </small>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="Navegação" class="mb-4">
+  <ol class="breadcrumb bg-white p-3 rounded shadow-sm">
+    <!-- Link Home -->
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('file_manager.index') }}" class="text-decoration-none">
+        <i class="bi bi-house-door-fill text-primary"></i>
+      </a>
+    </li>
+
+    {% set path_parts = path.split('/') %}
+    {% set accumulated_path = [] %}
+    {% for part in path_parts if part %}
+      {% set _ = accumulated_path.append(part) %}
+      {% set current_link = accumulated_path | join('/') %}
+
+      <li class="breadcrumb-item">
+        <a
+          href="{{ url_for('file_manager.index', path=current_link) }}"
+          class="module-link text-decoration-none text-dark"
+          data-module="file_manager"
+        >
+          {{ part }}
+        </a>
+      </li>
+    {% endfor %}
+  </ol>
+</nav>
+
+<div class="list-group">
+  {% if items %}
+    {% for item in items %}
+      <div
+        class="list-group-item file-item d-flex justify-content-between align-items-center"
+      >
+        <div>
+          <i
+            class="bi bi-{{ 'folder-fill' if item.is_dir else 'file-earmark' }} text-{{ 'warning' if item.is_dir else 'secondary' }} me-2"
+          ></i>
+          {% if item.is_dir %}
+            <a
+              href="{{ url_for('file_manager.index', path=item.path) }}"
+              class="module-link text-decoration-none"
+              data-module="file_manager"
+              >{{ item.name }}</a
+            >
+          {% else %}
+            <a href="{{ url_for('file_manager.download_file', filename=item.path) }}" class="text-decoration-none">
+              <span>{{ item.name }}</span>
+            </a>
+            <small class="text-muted ms-2">
+              {% if item.size_human %}
+                {{ item.size_human }}
+              {% endif %}
+            </small>
+          {% endif %}
+        </div>
+        <div class="actions">
+          {% if not item.is_dir %}
+            <a
+              href="{{ url_for('file_manager.download_file', filename=item.path) }}"
+              class="btn btn-sm btn-outline-success"
+            >
+              <i class="bi bi-download"></i>
+            </a>
+          {% endif %}
+          <a
+            href="{{ url_for('file_manager.delete_file', filename=item.path) }}"
+            class="btn btn-sm btn-outline-danger"
+            onclick="return confirm('Tem certeza?')"
+          >
+            <i class="bi bi-trash"></i>
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <i class="bi bi-folder2-open display-4 d-block mb-3"></i>
+      <p class="mb-0">Esta pasta está vazia</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Modais -->
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload de Arquivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{{ url_for('file_manager.upload_file') }}" method="post" enctype="multipart/form-data">
+        <div class="modal-body">
+          <input type="hidden" name="path" value="{{ path }}">
+          <div class="mb-3">
+            <label for="file" class="form-label">Selecione o arquivo</label>
+            <input type="file" class="form-control" id="file" name="file" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Mkdir Modal -->
+<div class="modal fade" id="mkdirModal" tabindex="-1" aria-labelledby="mkdirModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mkdirModalLabel">Nova Pasta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="{{ url_for('file_manager.mkdir') }}" method="post">
+        <div class="modal-body">
+          <input type="hidden" name="path" value="{{ path }}">
+          <div class="mb-3">
+            <label for="dirname" class="form-label">Nome da Pasta</label>
+            <input type="text" class="form-control" id="dirname" name="dirname" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %} 

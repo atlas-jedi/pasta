@@ -1,0 +1,124 @@
+{% block header_title %}Calculadora de Tempo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="btn-group mb-4" role="group">
+    <input type="radio" class="btn-check" name="calculation_type" id="type_add_subtract" value="add_subtract" checked>
+    <label class="btn btn-outline-primary" for="type_add_subtract">Adicionar/Subtrair Tempo</label>
+    
+    <input type="radio" class="btn-check" name="calculation_type" id="type_difference" value="difference">
+    <label class="btn btn-outline-primary" for="type_difference">Calcular Diferença</label>
+  </div>
+
+  <div id="add_subtract_form" class="calculation-form">
+    <form action="{{ url_for('time_calculator.calculate_time') }}" method="post" class="row g-3">
+      <input type="hidden" name="calculation_type" value="add_subtract">
+      
+      <div class="col-md-4">
+        <label for="start_time" class="form-label">Hora Inicial (HH:MM)</label>
+        <input type="text" class="form-control" id="start_time" name="start_time" placeholder="Ex: 14:30" value="{{ start_time|default('') }}">
+      </div>
+      
+      <div class="col-md-2">
+        <label for="operation" class="form-label">Operação</label>
+        <select class="form-select" id="operation" name="operation">
+          <option value="add" {% if operation == 'add' %}selected{% endif %}>Adicionar</option>
+          <option value="subtract" {% if operation == 'subtract' %}selected{% endif %}>Subtrair</option>
+        </select>
+      </div>
+      
+      <div class="col-md-3">
+        <label for="hours" class="form-label">Horas</label>
+        <input type="number" class="form-control" id="hours" name="hours" min="0" value="{{ hours|default(0) }}">
+      </div>
+      
+      <div class="col-md-3">
+        <label for="minutes" class="form-label">Minutos</label>
+        <input type="number" class="form-control" id="minutes" name="minutes" min="0" max="59" value="{{ minutes|default(0) }}">
+      </div>
+      
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Calcular</button>
+      </div>
+    </form>
+    
+    {% if result_time %}
+    <div class="mt-4 alert alert-success">
+      <h4>Resultado:</h4>
+      <p>A hora resultante é: <strong>{{ result_time }}</strong></p>
+    </div>
+    {% endif %}
+  </div>
+  
+  <div id="difference_form" class="calculation-form" style="display: none;">
+    <form action="{{ url_for('time_calculator.calculate_time_difference') }}" method="post" class="row g-3">
+      <input type="hidden" name="calculation_type" value="difference">
+      
+      <div class="col-md-6">
+        <label for="start_time_diff" class="form-label">Hora Inicial (HH:MM)</label>
+        <input type="text" class="form-control" id="start_time_diff" name="start_time_diff" placeholder="Ex: 09:00" value="{{ start_time_diff|default('') }}">
+      </div>
+      
+      <div class="col-md-6">
+        <label for="end_time_diff" class="form-label">Hora Final (HH:MM)</label>
+        <input type="text" class="form-control" id="end_time_diff" name="end_time_diff" placeholder="Ex: 17:30" value="{{ end_time_diff|default('') }}">
+      </div>
+      
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Calcular Diferença</button>
+      </div>
+    </form>
+    
+    {% if diff_hours is defined and diff_minutes is defined %}
+    <div class="mt-4 alert alert-success">
+      <h4>Resultado:</h4>
+      <p>A diferença de tempo é: <strong>{{ diff_hours }} horas e {{ diff_minutes }} minutos</strong></p>
+    </div>
+    {% endif %}
+  </div>
+  
+  {% if error %}
+  <div class="mt-4 alert alert-danger">
+    <p>{{ error }}</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Obter referências aos formulários
+    const addSubtractForm = document.getElementById('add_subtract_form');
+    const differenceForm = document.getElementById('difference_form');
+    
+    // Obter referências aos botões de rádio
+    const typeAddSubtract = document.getElementById('type_add_subtract');
+    const typeDifference = document.getElementById('type_difference');
+    
+    // Função para mostrar o formulário apropriado
+    function showForm() {
+      if (typeAddSubtract.checked) {
+        addSubtractForm.style.display = 'block';
+        differenceForm.style.display = 'none';
+      } else {
+        addSubtractForm.style.display = 'none';
+        differenceForm.style.display = 'block';
+      }
+    }
+    
+    // Configurar os listeners de eventos
+    typeAddSubtract.addEventListener('change', showForm);
+    typeDifference.addEventListener('change', showForm);
+    
+    // Verificar o estado inicial com base na variável calculation_type do template
+    const calculationType = "{{ calculation_type|default('add_subtract') }}";
+    if (calculationType === 'difference') {
+      typeDifference.checked = true;
+    } else {
+      typeAddSubtract.checked = true;
+    }
+    
+    // Mostrar o formulário apropriado
+    showForm();
+  });
+</script>
+{% endblock %} 
