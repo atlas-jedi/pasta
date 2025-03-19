@@ -1,0 +1,382 @@
+<div class="timer-container">
+  <h5 class="mb-3">Timer</h5>
+  
+  <!-- Timer Display -->
+  <div class="timer-display mb-4 text-center">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-body p-4">
+            <div class="display-1 timer-countdown mb-3">
+              <span id="hours">00</span>:<span id="minutes">00</span>:<span id="seconds">00</span>
+            </div>
+            <div class="progress mb-4">
+              <div id="timer-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div class="d-flex justify-content-center">
+              <button id="start-timer-btn" class="btn btn-primary mx-1">
+                <i class="bi bi-play-fill"></i> Iniciar
+              </button>
+              <button id="pause-timer-btn" class="btn btn-warning mx-1" disabled>
+                <i class="bi bi-pause-fill"></i> Pausar
+              </button>
+              <button id="reset-timer-btn" class="btn btn-danger mx-1" disabled>
+                <i class="bi bi-arrow-counterclockwise"></i> Reiniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Timer Settings -->
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0">Configurar Timer</h6>
+        </div>
+        <div class="card-body">
+          <form id="timer-form" class="row g-3">
+            <div class="col-4">
+              <label for="timer-hours" class="form-label">Horas</label>
+              <input type="number" class="form-control" id="timer-hours" min="0" max="23" value="0">
+            </div>
+            <div class="col-4">
+              <label for="timer-minutes" class="form-label">Minutos</label>
+              <input type="number" class="form-control" id="timer-minutes" min="0" max="59" value="0">
+            </div>
+            <div class="col-4">
+              <label for="timer-seconds" class="form-label">Segundos</label>
+              <input type="number" class="form-control" id="timer-seconds" min="0" max="59" value="0">
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="timer-loop" value="1">
+                <label class="form-check-label" for="timer-loop">Repetir automaticamente</label>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-header">
+          <h6 class="mb-0">Notificações</h6>
+        </div>
+        <div class="card-body">
+          <form id="notification-form" class="row g-3">
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="enable-sound" value="1" checked>
+                <label class="form-check-label" for="enable-sound">Som de alerta</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="enable-browser-notification" value="1">
+                <label class="form-check-label" for="enable-browser-notification">Notificação do navegador</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="notification-message" class="form-label">Mensagem de notificação</label>
+              <input type="text" class="form-control" id="notification-message" value="Tempo esgotado!">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Presets -->
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h6 class="mb-0">Presets</h6>
+      <button id="save-preset-btn" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-save"></i> Salvar Preset
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="row" id="preset-container">
+        <div class="col-md-3 mb-2">
+          <div class="card preset-card">
+            <div class="card-body text-center">
+              <h6>Pomodoro</h6>
+              <p class="mb-0">25:00</p>
+              <button class="btn btn-sm btn-outline-secondary mt-2 load-preset" data-hours="0" data-minutes="25" data-seconds="0">
+                Carregar
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-2">
+          <div class="card preset-card">
+            <div class="card-body text-center">
+              <h6>Pausa Curta</h6>
+              <p class="mb-0">05:00</p>
+              <button class="btn btn-sm btn-outline-secondary mt-2 load-preset" data-hours="0" data-minutes="5" data-seconds="0">
+                Carregar
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-2">
+          <div class="card preset-card">
+            <div class="card-body text-center">
+              <h6>Pausa Longa</h6>
+              <p class="mb-0">15:00</p>
+              <button class="btn btn-sm btn-outline-secondary mt-2 load-preset" data-hours="0" data-minutes="15" data-seconds="0">
+                Carregar
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-2">
+          <div class="card preset-card">
+            <div class="card-body text-center">
+              <h6>Reunião</h6>
+              <p class="mb-0">01:00:00</p>
+              <button class="btn btn-sm btn-outline-secondary mt-2 load-preset" data-hours="1" data-minutes="0" data-seconds="0">
+                Carregar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sound for timer -->
+<audio id="timer-sound" preload="auto">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Timer elements
+    const hoursElement = document.getElementById('hours');
+    const minutesElement = document.getElementById('minutes');
+    const secondsElement = document.getElementById('seconds');
+    const progressBar = document.getElementById('timer-progress');
+    
+    // Buttons
+    const startBtn = document.getElementById('start-timer-btn');
+    const pauseBtn = document.getElementById('pause-timer-btn');
+    const resetBtn = document.getElementById('reset-timer-btn');
+    
+    // Form inputs
+    const hoursInput = document.getElementById('timer-hours');
+    const minutesInput = document.getElementById('timer-minutes');
+    const secondsInput = document.getElementById('timer-seconds');
+    const loopCheckbox = document.getElementById('timer-loop');
+    
+    // Notification elements
+    const soundCheckbox = document.getElementById('enable-sound');
+    const notificationCheckbox = document.getElementById('enable-browser-notification');
+    const notificationMessage = document.getElementById('notification-message');
+    
+    // Sound element
+    const timerSound = document.getElementById('timer-sound');
+    
+    // Timer variables
+    let timer = null;
+    let totalSeconds = 0;
+    let remainingSeconds = 0;
+    let isRunning = false;
+    let originalSeconds = 0;
+    
+    // Load preset buttons
+    const presetButtons = document.querySelectorAll('.load-preset');
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const hours = parseInt(this.dataset.hours);
+        const minutes = parseInt(this.dataset.minutes);
+        const seconds = parseInt(this.dataset.seconds);
+        
+        hoursInput.value = hours;
+        minutesInput.value = minutes;
+        secondsInput.value = seconds;
+        
+        updateTimerDisplay(hours, minutes, seconds);
+        resetTimer();
+      });
+    });
+    
+    // Initialize
+    updateTimerDisplay(0, 0, 0);
+    
+    // Event listeners
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    
+    // Request permission for browser notifications
+    if ('Notification' in window) {
+      notificationCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+          Notification.requestPermission();
+        }
+      });
+    } else {
+      notificationCheckbox.disabled = true;
+      notificationCheckbox.parentElement.style.opacity = 0.5;
+    }
+    
+    // Functions
+    function startTimer() {
+      if (!isRunning) {
+        // Get values from inputs if timer is not already set
+        if (remainingSeconds === 0) {
+          const hours = parseInt(hoursInput.value) || 0;
+          const minutes = parseInt(minutesInput.value) || 0;
+          const seconds = parseInt(secondsInput.value) || 0;
+          
+          totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+          remainingSeconds = totalSeconds;
+          originalSeconds = totalSeconds;
+          
+          // Validate if timer has a valid duration
+          if (totalSeconds <= 0) {
+            alert('Por favor, defina um tempo maior que zero.');
+            return;
+          }
+        }
+        
+        isRunning = true;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        resetBtn.disabled = false;
+        
+        timer = setInterval(function() {
+          remainingSeconds--;
+          
+          // Update progress bar
+          const progress = ((originalSeconds - remainingSeconds) / originalSeconds) * 100;
+          progressBar.style.width = `${progress}%`;
+          
+          // Calculate hours, minutes and seconds
+          const hours = Math.floor(remainingSeconds / 3600);
+          const minutes = Math.floor((remainingSeconds % 3600) / 60);
+          const seconds = remainingSeconds % 60;
+          
+          // Update display
+          updateTimerDisplay(hours, minutes, seconds);
+          
+          // Check if timer reached zero
+          if (remainingSeconds <= 0) {
+            clearInterval(timer);
+            isRunning = false;
+            
+            // Play sound if enabled
+            if (soundCheckbox.checked) {
+              timerSound.play();
+            }
+            
+            // Show browser notification if enabled
+            if (notificationCheckbox.checked && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification('Timer', {
+                body: notificationMessage.value,
+                icon: '/static/images/timer-icon.png'
+              });
+            }
+            
+            // If loop is enabled, restart timer
+            if (loopCheckbox.checked) {
+              remainingSeconds = originalSeconds;
+              startTimer();
+            } else {
+              startBtn.disabled = false;
+              pauseBtn.disabled = true;
+            }
+          }
+        }, 1000);
+      }
+    }
+    
+    function pauseTimer() {
+      if (isRunning) {
+        clearInterval(timer);
+        isRunning = false;
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+      }
+    }
+    
+    function resetTimer() {
+      clearInterval(timer);
+      isRunning = false;
+      
+      const hours = parseInt(hoursInput.value) || 0;
+      const minutes = parseInt(minutesInput.value) || 0;
+      const seconds = parseInt(secondsInput.value) || 0;
+      
+      totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+      remainingSeconds = totalSeconds;
+      originalSeconds = totalSeconds;
+      
+      updateTimerDisplay(hours, minutes, seconds);
+      progressBar.style.width = '0%';
+      
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      resetBtn.disabled = true;
+    }
+    
+    function updateTimerDisplay(hours, minutes, seconds) {
+      hoursElement.textContent = hours.toString().padStart(2, '0');
+      minutesElement.textContent = minutes.toString().padStart(2, '0');
+      secondsElement.textContent = seconds.toString().padStart(2, '0');
+    }
+    
+    // Save preset functionality
+    document.getElementById('save-preset-btn').addEventListener('click', function() {
+      const hours = parseInt(hoursInput.value) || 0;
+      const minutes = parseInt(minutesInput.value) || 0;
+      const seconds = parseInt(secondsInput.value) || 0;
+      
+      if (hours === 0 && minutes === 0 && seconds === 0) {
+        alert('Por favor, defina um tempo maior que zero para salvar como preset.');
+        return;
+      }
+      
+      const presetName = prompt('Digite um nome para o preset:');
+      if (presetName) {
+        // Format time for display
+        const timeDisplay = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Create preset card
+        const presetCard = document.createElement('div');
+        presetCard.className = 'col-md-3 mb-2';
+        presetCard.innerHTML = `
+          <div class="card preset-card">
+            <div class="card-body text-center">
+              <h6>${presetName}</h6>
+              <p class="mb-0">${timeDisplay}</p>
+              <button class="btn btn-sm btn-outline-secondary mt-2 load-preset" data-hours="${hours}" data-minutes="${minutes}" data-seconds="${seconds}">
+                Carregar
+              </button>
+            </div>
+          </div>
+        `;
+        
+        // Add to container
+        document.getElementById('preset-container').appendChild(presetCard);
+        
+        // Add event listener to the new button
+        const newButton = presetCard.querySelector('.load-preset');
+        newButton.addEventListener('click', function() {
+          hoursInput.value = this.dataset.hours;
+          minutesInput.value = this.dataset.minutes;
+          secondsInput.value = this.dataset.seconds;
+          
+          updateTimerDisplay(parseInt(this.dataset.hours), parseInt(this.dataset.minutes), parseInt(this.dataset.seconds));
+          resetTimer();
+        });
+      }
+    });
+  });
+</script> 

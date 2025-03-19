@@ -21,7 +21,7 @@ file_manager_bp = Blueprint(
 def index():
     """List files and directories at the given path."""
     path = request.args.get('path', '')
-    
+
     # Redireciona para /?path= quando acessar a rota /
     if 'path' not in request.args:
         return redirect(url_for('file_manager.index', path=''))
