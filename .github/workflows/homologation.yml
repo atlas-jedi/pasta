@@ -42,30 +42,8 @@ jobs:
           echo "Executando testes no ambiente de homologação - testes do Cloudinary serão pulados"
           pytest -v
 
-      - name: Set up successful validation flag
+      - name: Success Notification
         if: success()
-        run: echo "VALIDATION_SUCCESS=true" >> $GITHUB_ENV
-
-  deploy:
-    needs: validate
-    if: success() && github.event_name == 'push'
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Render CLI
         run: |
-          curl -s https://render.com/download/cli | bash
-
-      - name: Deploy to Render
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-        run: |
-          # Configurar ambiente de homologação
-          cp .env.homologation .env
-
-          # Deploy usando a CLI do Render ou API
-          # O comando exato depende da configuração do seu serviço no Render
-          # Este é um exemplo que pode precisar ser ajustado:
-          render deploy --service-id "${{ secrets.RENDER_SERVICE_ID }}"
+          echo "✅ Validação concluída com sucesso!"
+          echo "O Render iniciará automaticamente o deploy da aplicação."

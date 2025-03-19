@@ -121,39 +121,45 @@ python run.py production
 
 ## CI/CD e Deploy Automático
 
-O projeto utiliza GitHub Actions para automação de CI/CD, facilitando o processo de validação de código e deploy na nuvem.
+O projeto utiliza GitHub Actions para automação de CI/CD, facilitando o processo de validação de código, e o Render para deploy automático na nuvem.
 
 ### Esteira de Homologação
 
 Uma esteira automatizada está configurada para monitorar a branch `hom` do repositório:
 
-1. Quando uma alteração é detectada, a esteira executa automaticamente:
-   - Validação de código com Flake8
-   - Execução dos testes com pytest
-   - Deploy automático no ambiente de homologação (Render)
+1. **GitHub Actions**: Quando uma alteração é detectada na branch `hom`:
 
-#### Pré-requisitos para o Deploy Automático
+   - Executa validação de código com Flake8
+   - Executa os testes com pytest (pulando os testes do Cloudinary no ambiente de homologação)
 
-Para configurar o deploy automático, você precisará:
+2. **Render**: Após a integração/push para a branch `hom`:
+   - Detecta automaticamente as mudanças na branch
+   - Inicia o processo de build e deploy da aplicação
+   - Ativa o novo deploy quando a build for concluída com sucesso
 
-1. Uma conta no [Render](https://render.com/) (plano gratuito)
-2. Configurar as seguintes secrets no seu repositório GitHub:
-   - `RENDER_API_KEY`: Sua chave de API do Render
-   - `RENDER_SERVICE_ID`: O ID do serviço criado no Render
+Este fluxo não requer intervenção manual, garantindo que o ambiente de homologação esteja sempre atualizado com a última versão estável da branch `hom`.
 
-#### Processo Manual de Deploy
+#### Configuração do Render para Deploy Automático
 
-Se necessário, você também pode fazer o deploy manual:
+Para configurar o deploy automático no Render:
 
-```bash
-# Configurar o ambiente de homologação
-cp .env.homologation .env
+1. Crie um novo Web Service no Render
+2. Conecte ao seu repositório GitHub
+3. Configure o branch para `hom`
+4. Configure as variáveis de ambiente conforme o arquivo `.env.homologation`
+5. Defina o build command: `pip install -r requirements.txt`
+6. Defina o start command: `gunicorn "app:create_app()" --timeout 120`
 
-# Deploy para o Render usando a CLI
-render deploy --service-id "seu-service-id"
-```
+#### Desabilitando o Deploy Automático (Opcional)
 
-#### Acessando o Ambiente de Homologação
+Se você precisar desabilitar temporariamente o deploy automático:
+
+1. Vá para o dashboard do Render
+2. Selecione seu serviço
+3. Vá para "Settings" > "Build & Deploy"
+4. Desmarque a opção "Auto-Deploy"
+
+#### Acesso ao Ambiente de Homologação
 
 Após o deploy, o ambiente de homologação estará disponível em:
 

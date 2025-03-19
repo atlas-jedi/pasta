@@ -17,4 +17,5 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-    autoDeploy: false # Desabilitar deploy automático do Render para usar GitHub Actions
+    autoDeploy: true # Habilitar deploy automático quando houver mudanças na branch conectada
+    branch: hom # Branch que será monitorada para auto-deploy
