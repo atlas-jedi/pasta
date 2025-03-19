@@ -85,6 +85,9 @@
     const copyLapsBtn = document.getElementById('copy-laps-btn');
     const clearLapsBtn = document.getElementById('clear-laps-btn');
     
+    // Debug - Verificar se o botão foi encontrado
+    console.log('Botão iniciar encontrado:', startBtn);
+    
     // Lap table elements
     const lapTableContainer = document.getElementById('lap-table-container');
     const noLapsMessage = document.getElementById('no-laps-message');
@@ -102,7 +105,10 @@
     updateStopwatchDisplay(0);
     
     // Event listeners
-    startBtn.addEventListener('click', startStopwatch);
+    startBtn.addEventListener('click', function(e) {
+      console.log('Botão iniciar clicado');
+      startStopwatch();
+    });
     pauseBtn.addEventListener('click', pauseStopwatch);
     lapBtn.addEventListener('click', recordLap);
     resetBtn.addEventListener('click', resetStopwatch);
@@ -111,6 +117,7 @@
     
     // Functions
     function startStopwatch() {
+      console.log('Função startStopwatch chamada, isRunning:', isRunning);
       if (!isRunning) {
         startTime = Date.now() - elapsedTime;
         isRunning = true;
@@ -128,6 +135,8 @@
         pauseBtn.disabled = false;
         lapBtn.disabled = false;
         resetBtn.disabled = false;
+        
+        console.log('Cronômetro iniciado');
       }
     }
     

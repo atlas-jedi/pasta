@@ -152,7 +152,9 @@
 
 <!-- Sound for timer -->
 <audio id="timer-sound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+  <source src="https://assets.mixkit.co/active_storage/sfx/988/988-preview.mp3" type="audio/mpeg">
+  <!-- Backup de áudio embutido como base64 caso a URL externa falhe -->
+  <source src="data:audio/mp3;base64,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" type="audio/mp3">
 </audio>
 
 <script>
@@ -273,7 +275,7 @@
             
             // Play sound if enabled
             if (soundCheckbox.checked) {
-              timerSound.play();
+              playTimerSound();
             }
             
             // Show browser notification if enabled
@@ -378,5 +380,31 @@
         });
       }
     });
+    
+    // Play sound function - improved to handle compatibility issues
+    function playTimerSound() {
+      try {
+        const timerSound = document.getElementById('timer-sound');
+        
+        // Reset the sound to the beginning
+        timerSound.currentTime = 0;
+        
+        // Try to play the sound
+        const playPromise = timerSound.play();
+        
+        // Handle potential promise rejection (browsers may require user interaction)
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            console.log('Timer sound played successfully');
+          }).catch(error => {
+            console.warn('Auto-play prevented:', error);
+            // Alert the user about the timer completion even if sound fails
+            alert('Timer concluído! (Som desativado devido às configurações do navegador)');
+          });
+        }
+      } catch (error) {
+        console.error('Error playing timer sound:', error);
+      }
+    }
   });
 </script> 

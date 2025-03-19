@@ -1,5 +1,8 @@
 {% block header_title %}Calculadora de Tempo{% endblock %}
 
+<!-- Elemento escondido com o título do header para AJAX -->
+<div data-header-title style="display: none;">Calculadora de Tempo</div>
+
 {% block content %}
 <div class="container py-3">
   <!-- Navigation tabs -->
@@ -59,7 +62,7 @@
     <div class="tab-pane fade {% if not calculation_type or calculation_type == 'add_subtract' %}show active{% endif %}" 
          id="add-subtract" role="tabpanel" aria-labelledby="add-subtract-tab">
       <h5 class="mb-3">Adicionar ou Subtrair Tempo</h5>
-      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3">
+      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
         <input type="hidden" name="calculation_type" value="add_subtract">
         
         <div class="col-md-6">
@@ -110,7 +113,7 @@
     <div class="tab-pane fade {% if calculation_type == 'difference' %}show active{% endif %}" 
          id="difference" role="tabpanel" aria-labelledby="difference-tab">
       <h5 class="mb-3">Calcular Diferença de Tempo</h5>
-      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3">
+      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
         <input type="hidden" name="calculation_type" value="difference">
         
         <div class="col-12">
@@ -186,7 +189,7 @@
     <div class="tab-pane fade {% if calculation_type == 'convert_units' %}show active{% endif %}" 
          id="convert" role="tabpanel" aria-labelledby="convert-tab">
       <h5 class="mb-3">Converter Unidades de Tempo</h5>
-      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3">
+      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
         <input type="hidden" name="calculation_type" value="convert_units">
         
         <div class="col-md-4">
@@ -238,7 +241,7 @@
     <div class="tab-pane fade {% if calculation_type == 'divide_interval' %}show active{% endif %}" 
          id="divide" role="tabpanel" aria-labelledby="divide-tab">
       <h5 class="mb-3">Dividir Intervalo de Tempo</h5>
-      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3">
+      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
         <input type="hidden" name="calculation_type" value="divide_interval">
         
         <div class="col-12">
@@ -297,7 +300,7 @@
     <div class="tab-pane fade {% if calculation_type == 'timezone_convert' %}show active{% endif %}" 
          id="timezone" role="tabpanel" aria-labelledby="timezone-tab">
       <h5 class="mb-3">Converter Fusos Horários</h5>
-      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3">
+      <form action="{{ url_for('time_calculator.calculate') }}" method="post" class="row g-3 ajax-form">
         <input type="hidden" name="calculation_type" value="timezone_convert">
         
         <div class="col-md-6">
@@ -318,12 +321,22 @@
         
         <div class="col-12">
           <label class="form-label">Fusos Horários de Destino</label>
+          <div class="input-group mb-2">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="timezone-search" placeholder="Filtrar fusos horários...">
+            <button type="button" class="btn btn-outline-secondary" id="clear-timezone-search">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <small class="text-muted" id="timezone-counter"></small>
+            <small class="text-muted">Segure Ctrl para selecionar múltiplos fusos horários</small>
+          </div>
           <select class="form-select" id="target_timezones" name="target_timezones[]" multiple size="6">
             {% for tz in timezones %}
               <option value="{{ tz }}" {% if target_timezones and tz in target_timezones %}selected{% endif %}>{{ tz }}</option>
             {% endfor %}
           </select>
-          <div class="form-text">Segure Ctrl para selecionar múltiplos fusos horários</div>
         </div>
         
         <div class="col-12">
@@ -429,6 +442,100 @@
       }
     }
     
+    // Timezone search functionality
+    const timezoneSearchInput = document.getElementById('timezone-search');
+    const clearTimezoneSearchBtn = document.getElementById('clear-timezone-search');
+    const targetTimezonesSelect = document.getElementById('target_timezones');
+    const timezoneCounter = document.getElementById('timezone-counter');
+    
+    if (timezoneSearchInput && targetTimezonesSelect) {
+      // Armazenar todos os fusos horários originais para referência
+      const allTimezones = [];
+      const selectedTimezones = new Set();
+      
+      // Inicializar o array com todos os fusos horários e status de seleção
+      for (let i = 0; i < targetTimezonesSelect.options.length; i++) {
+        const option = targetTimezonesSelect.options[i];
+        allTimezones.push({
+          value: option.value,
+          text: option.text,
+          selected: option.selected
+        });
+        
+        if (option.selected) {
+          selectedTimezones.add(option.value);
+        }
+      }
+      
+      // Atualizar contador inicialmente
+      updateTimezoneCounter(allTimezones.length, allTimezones.length);
+      
+      // Função para atualizar a lista de fusos com base no filtro
+      function updateTimezoneList(filter = '') {
+        // Limpar o select atual
+        targetTimezonesSelect.innerHTML = '';
+        
+        // Filtrar os fusos horários
+        const filteredTimezones = filter === '' 
+          ? allTimezones 
+          : allTimezones.filter(tz => tz.text.toLowerCase().includes(filter.toLowerCase()));
+        
+        // Adicionar as opções filtradas
+        filteredTimezones.forEach(tz => {
+          const option = document.createElement('option');
+          option.value = tz.value;
+          option.text = tz.text;
+          option.selected = selectedTimezones.has(tz.value);
+          targetTimezonesSelect.appendChild(option);
+        });
+        
+        // Mostrar feedback se não houver resultados
+        if (filteredTimezones.length === 0) {
+          const noResults = document.createElement('option');
+          noResults.disabled = true;
+          noResults.text = 'Nenhum fuso horário encontrado';
+          targetTimezonesSelect.appendChild(noResults);
+        }
+        
+        // Atualizar contador de resultados
+        updateTimezoneCounter(filteredTimezones.length, allTimezones.length);
+      }
+      
+      // Função para atualizar o contador de resultados
+      function updateTimezoneCounter(count, total) {
+        if (timezoneCounter) {
+          if (count === total) {
+            timezoneCounter.textContent = `Exibindo todos os ${total} fusos horários`;
+          } else {
+            timezoneCounter.textContent = `Exibindo ${count} de ${total} fusos horários`;
+          }
+        }
+      }
+      
+      // Evento para atualizar seleções
+      targetTimezonesSelect.addEventListener('change', function() {
+        // Atualizar o conjunto de fusos selecionados
+        selectedTimezones.clear();
+        for (let i = 0; i < this.options.length; i++) {
+          if (this.options[i].selected) {
+            selectedTimezones.add(this.options[i].value);
+          }
+        }
+      });
+      
+      // Evento de busca
+      timezoneSearchInput.addEventListener('input', function() {
+        updateTimezoneList(this.value);
+      });
+      
+      // Clear search button
+      clearTimezoneSearchBtn.addEventListener('click', function() {
+        timezoneSearchInput.value = '';
+        updateTimezoneList('');
+        timezoneSearchInput.focus();
+      });
+    }
+    
     // Load timer content
     const timerTab = document.getElementById('timer-tab');
     if (timerTab) {
@@ -439,9 +546,75 @@
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-        .then(response => response.text())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
         .then(html => {
-          timerPane.innerHTML = html;
+          console.log('Timer content loaded successfully');
+          
+          // Cria um elemento temporário para extrair o script sem executá-lo
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          
+          // Encontra todos os scripts antes de inserir o HTML
+          const scripts = Array.from(tempDiv.querySelectorAll('script')).map(script => {
+            // Armazena o conteúdo e remove o script do HTML
+            const content = script.textContent;
+            const src = script.src;
+            script.remove();
+            return { content, src };
+          });
+          
+          // Insere o HTML sem os scripts
+          timerPane.innerHTML = tempDiv.innerHTML;
+          
+          // Executa cada script após o HTML estar carregado
+          scripts.forEach(scriptData => {
+            try {
+              if (scriptData.src) {
+                // Script externo
+                const script = document.createElement('script');
+                script.src = scriptData.src;
+                document.body.appendChild(script);
+              } else if (scriptData.content) {
+                // Script inline
+                const modifiedContent = scriptData.content
+                  // Remove evento DOMContentLoaded e executa o código diretamente
+                  .replace(/document\.addEventListener\(['"]DOMContentLoaded['"], function\(\) \{([\s\S]*)\}\);/, function(match, p1) {
+                    return p1;
+                  });
+                  
+                // Executa o script modificado
+                const script = document.createElement('script');
+                script.textContent = `
+                  try {
+                    ${modifiedContent}
+                  } catch(e) { 
+                    console.error('Erro ao executar script do timer:', e);
+                  }
+                `;
+                document.body.appendChild(script);
+                // Script inline pode ser removido após execução
+                document.body.removeChild(script);
+              }
+            } catch (error) {
+              console.error('Erro ao processar script:', error);
+            }
+          });
+          
+          console.log('Timer scripts executed');
+        })
+        .catch(error => {
+          console.error('Erro ao carregar timer:', error);
+          timerPane.innerHTML = `
+            <div class="alert alert-danger">
+              <h5>Erro ao carregar o Timer</h5>
+              <p>Detalhes do erro: ${error.message}</p>
+              <button class="btn btn-primary" onclick="location.reload()">Recarregar Página</button>
+            </div>`;
         });
       });
     }
@@ -456,12 +629,240 @@
             'X-Requested-With': 'XMLHttpRequest'
           }
         })
-        .then(response => response.text())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
         .then(html => {
-          stopwatchPane.innerHTML = html;
+          console.log('Stopwatch content loaded successfully');
+          
+          // Cria um elemento temporário para extrair o script sem executá-lo
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          
+          // Encontra todos os scripts antes de inserir o HTML
+          const scripts = Array.from(tempDiv.querySelectorAll('script')).map(script => {
+            // Armazena o conteúdo e remove o script do HTML
+            const content = script.textContent;
+            const src = script.src;
+            script.remove();
+            return { content, src };
+          });
+          
+          // Insere o HTML sem os scripts
+          stopwatchPane.innerHTML = tempDiv.innerHTML;
+          
+          // Executa cada script após o HTML estar carregado
+          scripts.forEach(scriptData => {
+            try {
+              if (scriptData.src) {
+                // Script externo
+                const script = document.createElement('script');
+                script.src = scriptData.src;
+                document.body.appendChild(script);
+              } else if (scriptData.content) {
+                // Script inline
+                const modifiedContent = scriptData.content
+                  // Remove evento DOMContentLoaded e executa o código diretamente
+                  .replace(/document\.addEventListener\(['"]DOMContentLoaded['"], function\(\) \{([\s\S]*)\}\);/, function(match, p1) {
+                    return p1;
+                  });
+                  
+                // Executa o script modificado
+                const script = document.createElement('script');
+                script.textContent = `
+                  try {
+                    ${modifiedContent}
+                  } catch(e) { 
+                    console.error('Erro ao executar script do stopwatch:', e);
+                  }
+                `;
+                document.body.appendChild(script);
+                // Script inline pode ser removido após execução
+                document.body.removeChild(script);
+              }
+            } catch (error) {
+              console.error('Erro ao processar script do stopwatch:', error);
+            }
+          });
+          
+          console.log('Stopwatch scripts executed');
+        })
+        .catch(error => {
+          console.error('Erro ao carregar stopwatch:', error);
+          stopwatchPane.innerHTML = `
+            <div class="alert alert-danger">
+              <h5>Erro ao carregar o Cronômetro</h5>
+              <p>Detalhes do erro: ${error.message}</p>
+              <button class="btn btn-primary" onclick="location.reload()">Recarregar Página</button>
+            </div>`;
         });
       });
     }
+    
+    // Manipulador de formulários para envio via AJAX
+    document.querySelectorAll('.ajax-form').forEach(function(form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault(); // Previne o envio normal do formulário
+        
+        const formData = new FormData(this);
+        // Adicionar parâmetro para solicitar resposta JSON
+        formData.append('format', 'json');
+        
+        const calculationType = formData.get('calculation_type');
+        const tabId = this.closest('.tab-pane').id;
+        const resultContainer = this.nextElementSibling;
+        
+        // Adicionar indicador de carregamento
+        let loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'text-center mt-3';
+        loadingIndicator.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div><p class="mt-2">Calculando...</p>';
+        
+        // Se já existe um resultado, substituí-lo pelo indicador de carregamento
+        if (resultContainer && resultContainer.classList.contains('alert')) {
+          resultContainer.replaceWith(loadingIndicator);
+        } else {
+          // Caso contrário, adicionar o indicador após o formulário
+          this.insertAdjacentElement('afterend', loadingIndicator);
+        }
+        
+        // Enviar solicitação AJAX
+        axios.post(this.action, formData)
+          .then(response => {
+            // Verificar se a resposta é JSON
+            const data = response.data;
+            
+            // Criar o elemento de resultado com base no tipo de cálculo
+            let resultHTML = '';
+            
+            if (data.error) {
+              resultHTML = `
+                <div class="mt-4 alert alert-danger">
+                  <p>${data.error}</p>
+                </div>
+              `;
+            } else {
+              switch(calculationType) {
+                case 'add_subtract':
+                  resultHTML = `
+                    <div class="mt-4 alert alert-success">
+                      <h5>Resultado:</h5>
+                      <p>A hora resultante é: <strong>${data.result_time}</strong></p>
+                    </div>
+                  `;
+                  break;
+                case 'difference':
+                  resultHTML = `
+                    <div class="mt-4 alert alert-success">
+                      <h5>Resultado:</h5>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <p class="mb-1">Formatado: <strong>${data.diff_hours} horas, ${data.diff_minutes} minutos e ${data.diff_seconds} segundos</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                          <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              Segundos
+                              <span class="badge bg-primary rounded-pill">${data.total_seconds}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              Minutos
+                              <span class="badge bg-primary rounded-pill">${data.total_minutes}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              Horas
+                              <span class="badge bg-primary rounded-pill">${data.total_hours}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              Dias
+                              <span class="badge bg-primary rounded-pill">${data.total_days}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              Semanas
+                              <span class="badge bg-primary rounded-pill">${data.total_weeks}</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                  break;
+                case 'convert_units':
+                  resultHTML = `
+                    <div class="mt-4 alert alert-success">
+                      <h5>Resultado:</h5>
+                      <p>${data.value} ${data.from_unit} = <strong>${data.result} ${data.to_unit}</strong></p>
+                    </div>
+                  `;
+                  break;
+                case 'divide_interval':
+                  const intervalItems = data.intervals.map((interval, idx) => 
+                    `<li class="list-group-item">${interval}</li>`
+                  ).join('');
+                  
+                  resultHTML = `
+                    <div class="mt-4 alert alert-success">
+                      <h5>Resultado:</h5>
+                      <p>Intervalo dividido em ${data.divisions} partes iguais de <strong>${data.division_duration}</strong> cada:</p>
+                      <ol class="list-group list-group-numbered">
+                        ${intervalItems}
+                      </ol>
+                    </div>
+                  `;
+                  break;
+                case 'timezone_convert':
+                  const conversionRows = data.conversions.map(conv => `
+                    <tr>
+                      <td>${conv.timezone}</td>
+                      <td>${conv.time}</td>
+                      <td>${conv.dst_active ? '<i class="bi bi-check text-success"></i>' : '<i class="bi bi-x text-danger"></i>'}</td>
+                    </tr>
+                  `).join('');
+                  
+                  resultHTML = `
+                    <div class="mt-4 alert alert-success">
+                      <h5>Resultado:</h5>
+                      <p>Hora em ${data.source_timezone}: <strong>${data.source_time}</strong></p>
+                      <div class="table-responsive">
+                        <table class="table table-striped">
+                          <thead>
+                            <tr>
+                              <th>Fuso Horário</th>
+                              <th>Hora</th>
+                              <th>Horário de Verão</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${conversionRows}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  `;
+                  break;
+              }
+            }
+            
+            // Criar elemento DOM a partir do HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = resultHTML;
+            const resultElement = tempDiv.firstElementChild;
+            
+            // Substituir o indicador de carregamento pelo resultado
+            if (resultElement) {
+              loadingIndicator.replaceWith(resultElement);
+            } else {
+              loadingIndicator.innerHTML = '<div class="alert alert-danger mt-3">Não foi possível processar o resultado.</div>';
+            }
+          })
+          .catch(function(error) {
+            console.error('Erro ao calcular:', error);
+            loadingIndicator.innerHTML = '<div class="alert alert-danger mt-3">Ocorreu um erro ao processar a solicitação.</div>';
+          });
+      });
+    });
   });
 </script>
 {% endblock %} 
