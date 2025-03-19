@@ -72,6 +72,24 @@
             // Atualizar o conteúdo
             document.getElementById('content-container').innerHTML = response.data;
             
+            // Extrair e atualizar o título do header
+            const headerTitleBlock = document.getElementById('content-container').querySelector('[data-header-title]');
+            if (headerTitleBlock) {
+              document.getElementById('page-header-title').textContent = headerTitleBlock.textContent;
+              // Remover o elemento após leitura para evitar duplicação
+              headerTitleBlock.remove();
+            } else {
+              // Tentativa alternativa de encontrar o título
+              const firstHeading = document.getElementById('content-container').querySelector('h5');
+              if (firstHeading) {
+                document.getElementById('page-header-title').textContent = firstHeading.textContent;
+              } else if (moduleName === 'time_calculator') {
+                document.getElementById('page-header-title').textContent = 'Calculadora de Tempo';
+              } else if (moduleName === 'file_manager') {
+                document.getElementById('page-header-title').textContent = 'Gerenciador de Arquivos';
+              }
+            }
+            
             // Atualizar URL sem recarregar a página
             history.pushState({}, '', moduleUrl);
             

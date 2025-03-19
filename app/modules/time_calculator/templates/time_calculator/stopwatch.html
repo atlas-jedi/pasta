@@ -1,0 +1,274 @@
+<div class="stopwatch-container">
+  <h5 class="mb-3">Cronômetro</h5>
+  
+  <!-- Stopwatch Display -->
+  <div class="timer-display mb-4 text-center">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card">
+          <div class="card-body p-4">
+            <div class="display-1 stopwatch-time mb-3">
+              <span id="stopwatch-minutes">00</span>:<span id="stopwatch-seconds">00</span>.<span id="stopwatch-hundredths">00</span>
+            </div>
+            <div class="d-flex justify-content-center">
+              <button id="start-stopwatch-btn" class="btn btn-primary mx-1">
+                <i class="bi bi-play-fill"></i> Iniciar
+              </button>
+              <button id="pause-stopwatch-btn" class="btn btn-warning mx-1" disabled>
+                <i class="bi bi-pause-fill"></i> Pausar
+              </button>
+              <button id="lap-stopwatch-btn" class="btn btn-info mx-1" disabled>
+                <i class="bi bi-flag-fill"></i> Volta
+              </button>
+              <button id="reset-stopwatch-btn" class="btn btn-danger mx-1" disabled>
+                <i class="bi bi-arrow-counterclockwise"></i> Reiniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Lap Times -->
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">Tempos de Volta</h6>
+          <div>
+            <button id="copy-laps-btn" class="btn btn-sm btn-outline-secondary" disabled>
+              <i class="bi bi-clipboard"></i> Copiar
+            </button>
+            <button id="clear-laps-btn" class="btn btn-sm btn-outline-danger" disabled>
+              <i class="bi bi-trash"></i> Limpar
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="no-laps-message" class="text-center text-muted py-4">
+            <i class="bi bi-stopwatch display-4"></i>
+            <p class="mt-2">Nenhuma volta registrada</p>
+          </div>
+          <div class="table-responsive" id="lap-table-container" style="display: none;">
+            <table class="table table-striped table-hover" id="lap-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tempo da Volta</th>
+                  <th>Tempo Total</th>
+                </tr>
+              </thead>
+              <tbody id="lap-table-body">
+                <!-- Laps will be added here by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Stopwatch elements
+    const minutesElement = document.getElementById('stopwatch-minutes');
+    const secondsElement = document.getElementById('stopwatch-seconds');
+    const hundredthsElement = document.getElementById('stopwatch-hundredths');
+    
+    // Buttons
+    const startBtn = document.getElementById('start-stopwatch-btn');
+    const pauseBtn = document.getElementById('pause-stopwatch-btn');
+    const lapBtn = document.getElementById('lap-stopwatch-btn');
+    const resetBtn = document.getElementById('reset-stopwatch-btn');
+    const copyLapsBtn = document.getElementById('copy-laps-btn');
+    const clearLapsBtn = document.getElementById('clear-laps-btn');
+    
+    // Debug - Verificar se o botão foi encontrado
+    console.log('Botão iniciar encontrado:', startBtn);
+    
+    // Lap table elements
+    const lapTableContainer = document.getElementById('lap-table-container');
+    const noLapsMessage = document.getElementById('no-laps-message');
+    const lapTableBody = document.getElementById('lap-table-body');
+    
+    // Stopwatch variables
+    let stopwatch = null;
+    let startTime = 0;
+    let elapsedTime = 0;
+    let isRunning = false;
+    let lastLapTime = 0;
+    let lapCount = 0;
+    
+    // Initialize
+    updateStopwatchDisplay(0);
+    
+    // Event listeners
+    startBtn.addEventListener('click', function(e) {
+      console.log('Botão iniciar clicado');
+      startStopwatch();
+    });
+    pauseBtn.addEventListener('click', pauseStopwatch);
+    lapBtn.addEventListener('click', recordLap);
+    resetBtn.addEventListener('click', resetStopwatch);
+    copyLapsBtn.addEventListener('click', copyLapTimes);
+    clearLapsBtn.addEventListener('click', clearLapTimes);
+    
+    // Functions
+    function startStopwatch() {
+      console.log('Função startStopwatch chamada, isRunning:', isRunning);
+      if (!isRunning) {
+        startTime = Date.now() - elapsedTime;
+        isRunning = true;
+        
+        stopwatch = setInterval(function() {
+          // Calculate elapsed time in milliseconds
+          elapsedTime = Date.now() - startTime;
+          
+          // Update display
+          updateStopwatchDisplay(elapsedTime);
+        }, 10); // Update every 10ms for smooth display
+        
+        // Update button states
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        lapBtn.disabled = false;
+        resetBtn.disabled = false;
+        
+        console.log('Cronômetro iniciado');
+      }
+    }
+    
+    function pauseStopwatch() {
+      if (isRunning) {
+        clearInterval(stopwatch);
+        isRunning = false;
+        
+        // Update button states
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        lapBtn.disabled = true;
+      }
+    }
+    
+    function resetStopwatch() {
+      // Stop the stopwatch
+      clearInterval(stopwatch);
+      isRunning = false;
+      
+      // Reset variables
+      elapsedTime = 0;
+      startTime = 0;
+      
+      // Update display
+      updateStopwatchDisplay(0);
+      
+      // Update button states
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      lapBtn.disabled = true;
+      resetBtn.disabled = true;
+    }
+    
+    function recordLap() {
+      if (isRunning) {
+        lapCount++;
+        
+        // Calculate lap time (time since last lap)
+        const lapTime = elapsedTime - lastLapTime;
+        lastLapTime = elapsedTime;
+        
+        // Create a new row in the lap table
+        const newRow = document.createElement('tr');
+        
+        // Format times
+        const lapTimeFormatted = formatTime(lapTime);
+        const totalTimeFormatted = formatTime(elapsedTime);
+        
+        // Add lap information
+        newRow.innerHTML = `
+          <td>${lapCount}</td>
+          <td>${lapTimeFormatted}</td>
+          <td>${totalTimeFormatted}</td>
+        `;
+        
+        // Add to table
+        lapTableBody.prepend(newRow);
+        
+        // Show table and enable buttons
+        lapTableContainer.style.display = 'block';
+        noLapsMessage.style.display = 'none';
+        copyLapsBtn.disabled = false;
+        clearLapsBtn.disabled = false;
+      }
+    }
+    
+    function updateStopwatchDisplay(timeInMs) {
+      // Convert to minutes, seconds, and hundredths
+      const minutes = Math.floor(timeInMs / 60000);
+      const seconds = Math.floor((timeInMs % 60000) / 1000);
+      const hundredths = Math.floor((timeInMs % 1000) / 10);
+      
+      // Update display
+      minutesElement.textContent = minutes.toString().padStart(2, '0');
+      secondsElement.textContent = seconds.toString().padStart(2, '0');
+      hundredthsElement.textContent = hundredths.toString().padStart(2, '0');
+    }
+    
+    function formatTime(timeInMs) {
+      // Convert to minutes, seconds, and hundredths
+      const minutes = Math.floor(timeInMs / 60000);
+      const seconds = Math.floor((timeInMs % 60000) / 1000);
+      const hundredths = Math.floor((timeInMs % 1000) / 10);
+      
+      // Format as MM:SS.HH
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${hundredths.toString().padStart(2, '0')}`;
+    }
+    
+    function copyLapTimes() {
+      if (lapCount === 0) return;
+      
+      // Build a string with all lap times
+      let lapsText = 'Tempos de Volta:\n\n';
+      
+      // Get all rows from the table
+      const rows = lapTableBody.querySelectorAll('tr');
+      
+      // Process in reverse order (oldest first, as they appear in the UI)
+      Array.from(rows).reverse().forEach((row, index) => {
+        const cells = row.querySelectorAll('td');
+        lapsText += `Volta ${cells[0].textContent} - ${cells[1].textContent} (Total: ${cells[2].textContent})\n`;
+      });
+      
+      // Copy to clipboard
+      navigator.clipboard.writeText(lapsText)
+        .then(() => {
+          alert('Tempos de volta copiados para a área de transferência');
+        })
+        .catch(err => {
+          console.error('Erro ao copiar tempos de volta: ', err);
+          alert('Não foi possível copiar os tempos de volta');
+        });
+    }
+    
+    function clearLapTimes() {
+      if (lapCount === 0) return;
+      
+      if (confirm('Tem certeza que deseja limpar todos os tempos de volta?')) {
+        // Clear lap table
+        lapTableBody.innerHTML = '';
+        
+        // Reset lap variables
+        lapCount = 0;
+        lastLapTime = 0;
+        
+        // Hide table and disable buttons
+        lapTableContainer.style.display = 'none';
+        noLapsMessage.style.display = 'block';
+        copyLapsBtn.disabled = true;
+        clearLapsBtn.disabled = true;
+      }
+    }
+  });
+</script> 
