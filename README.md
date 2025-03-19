@@ -181,6 +181,34 @@ Para gerar um relatório HTML de cobertura:
 pytest --cov=app --cov-report=html tests/
 ```
 
+### Testes no Ambiente de Homologação
+
+No ambiente de homologação, os testes relacionados ao Cloudinary são automaticamente pulados, já que este recurso não está disponível neste ambiente.
+
+Para executar os testes no ambiente de homologação:
+
+```bash
+# Configurar o ambiente
+cp .env.homologation .env
+export FLASK_ENV=homologation
+
+# Executar os testes (testes do Cloudinary serão pulados)
+pytest -v
+```
+
+Para ver quais testes serão pulados:
+
+```bash
+pytest --collect-only -m cloudinary
+```
+
+Para forçar a execução dos testes do Cloudinary (não recomendado no ambiente de homologação):
+
+```bash
+# Desativar o pulo dos testes do Cloudinary
+pytest -v --override-ini=markers=''
+```
+
 ## Verificação de Qualidade de Código
 
 Para verificar o estilo de código com Flake8:

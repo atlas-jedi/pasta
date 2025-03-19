@@ -6,6 +6,7 @@ import cloudinary.uploader
 import pytest
 
 
+@pytest.mark.cloudinary
 def test_cloudinary_config(app):
     """Tests if Cloudinary is configured correctly."""
     assert app.config['CLOUDINARY']['cloud_name'] is not None
@@ -13,6 +14,7 @@ def test_cloudinary_config(app):
     assert app.config['CLOUDINARY']['api_secret'] is not None
 
 
+@pytest.mark.cloudinary
 def test_cloudinary_connection():
     """Tests if it's possible to connect to Cloudinary."""
     try:
@@ -23,6 +25,7 @@ def test_cloudinary_connection():
         pytest.fail(f'Failed to connect to Cloudinary: {str(e)}')
 
 
+@pytest.mark.cloudinary
 def test_upload_file(client):
     """Tests uploading a file to Cloudinary."""
     data = {'file': (BytesIO(b'test file content'), 'test.txt'), 'path': ''}
@@ -43,6 +46,7 @@ def test_upload_file(client):
             pass
 
 
+@pytest.mark.cloudinary
 def test_create_folder():
     """Tests creating a folder in Cloudinary."""
     folder_name = 'test_folder'
@@ -63,6 +67,7 @@ def test_create_folder():
             pass
 
 
+# @pytest.mark.cloudinary
 # def test_download_file(client, app):
 #     """Tests downloading a file from Cloudinary"""
 #     # Upload a test file

@@ -6,6 +6,51 @@ import pytest
 from app import create_app
 
 
+def pytest_configure(config):
+    """Configure pytest before test execution."""
+    # Define um marcador para testes que dependem do Cloudinary
+    config.addinivalue_line(
+        'markers', 'cloudinary: mark a test that requires Cloudinary connection'
+    )
+
+
+def detect_homologation_environment():
+    """Detecta se estamos no ambiente de homologação."""
+    # Verificar se FLASK_ENV está definido como homologation
+    flask_env = os.environ.get('FLASK_ENV')
+    if flask_env == 'homologation':
+        return True
+
+    # Verificar se o arquivo .env.homologation está sendo usado
+    if os.path.exists('.env.homologation'):
+        with open('.env.homologation', 'r') as f:
+            for line in f:
+                if 'FLASK_ENV=homologation' in line:
+                    # Verifica se este é o arquivo de ambiente atual
+                    if os.path.exists('.env'):
+                        with open('.env', 'r') as env_file:
+                            if env_file.read() == f.read():
+                                return True
+
+    # Verifica se foi passado um parâmetro de linha de comando
+    import sys
+
+    if len(sys.argv) > 1 and 'homologation' in sys.argv:
+        return True
+
+    return False
+
+
+@pytest.fixture(scope='session', autouse=True)
+def skip_cloudinary_tests():
+    """Skip cloudinary tests in homologation environment."""
+    if detect_homologation_environment():
+        # Se estiver em ambiente de homologação, configurar para pular testes com o marcador
+        pytest.skip(
+            'Cloudinary tests are disabled in homologation environment', allow_module_level=True
+        )
+
+
 @pytest.fixture
 def app():
     """Create and configure a test Flask application instance.

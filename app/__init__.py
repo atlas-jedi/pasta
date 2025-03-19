@@ -42,9 +42,11 @@ def create_app(test_config=None):
     @app.context_processor
     def inject_utility_functions():
         """Add utility functions to Jinja2 context."""
+
         def url_for_if_exists(endpoint, **values):
             from flask import url_for
             from werkzeug.routing.exceptions import BuildError
+
             try:
                 return url_for(endpoint, **values)
             except BuildError:
@@ -53,10 +55,10 @@ def create_app(test_config=None):
                     f'Attempted to generate URL for non-existent endpoint: {endpoint}'
                 )
                 return '#'
-        
+
         return dict(
             url_for_if_exists=url_for_if_exists,
-            is_module_enabled=lambda module: app.config.get(f'ENABLE_{module.upper()}', True)
+            is_module_enabled=lambda module: app.config.get(f'ENABLE_{module.upper()}', True),
         )
 
     # Register blueprints

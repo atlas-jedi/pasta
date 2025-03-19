@@ -2,9 +2,9 @@
 """Script para verificar o ambiente de homologação e detectar possíveis problemas."""
 
 import os
+from pathlib import Path
 import platform
 import sys
-from pathlib import Path
 
 
 def print_section(title):
@@ -17,33 +17,38 @@ def print_section(title):
 def check_environment_variables():
     """Verifica as variáveis de ambiente necessárias."""
     print_section('VARIÁVEIS DE AMBIENTE')
-    
+
     env_vars = {
         'FLASK_ENV': os.environ.get('FLASK_ENV', 'Não definida'),
         'ENABLE_FILE_MANAGER': os.environ.get('ENABLE_FILE_MANAGER', 'Não definida'),
         'SECRET_KEY': 'Definida' if os.environ.get('SECRET_KEY') else 'Não definida',
-        'CLOUDINARY_CLOUD_NAME': 
-            'Definida' if os.environ.get('CLOUDINARY_CLOUD_NAME') else 'Não definida',
-        'CLOUDINARY_API_KEY': 
-            'Definida' if os.environ.get('CLOUDINARY_API_KEY') else 'Não definida',
-        'CLOUDINARY_API_SECRET': 
-            'Definida' if os.environ.get('CLOUDINARY_API_SECRET') else 'Não definida',
+        'CLOUDINARY_CLOUD_NAME': (
+            'Definida' if os.environ.get('CLOUDINARY_CLOUD_NAME') else 'Não definida'
+        ),
+        'CLOUDINARY_API_KEY': (
+            'Definida' if os.environ.get('CLOUDINARY_API_KEY') else 'Não definida'
+        ),
+        'CLOUDINARY_API_SECRET': (
+            'Definida' if os.environ.get('CLOUDINARY_API_SECRET') else 'Não definida'
+        ),
     }
-    
+
     for var, value in env_vars.items():
         print(f'{var}: {value}')
-    
+
     # Verificar variáveis essenciais (excluindo as do Cloudinary que são opcionais)
-    essential_vars = [var for var in env_vars if var not in [
-        'CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'
-    ]]
+    essential_vars = [
+        var
+        for var in env_vars
+        if var not in ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
+    ]
     return all(env_vars[var] != 'Não definida' for var in essential_vars)
 
 
 def check_env_files():
     """Verifica os arquivos de ambiente."""
     print_section('ARQUIVOS DE AMBIENTE')
-    
+
     env_files = ['.env', '.env.homologation', '.env.example']
     for file in env_files:
         path = Path(file)
@@ -67,32 +72,32 @@ def check_env_files():
                     print(f'Erro ao ler {file}: {e}')
         else:
             print(f'{file}: ❌ Não encontrado')
-    
+
     return Path('.env.homologation').exists()
 
 
 def check_system_info():
     """Verifica informações do sistema."""
     print_section('INFORMAÇÕES DO SISTEMA')
-    
+
     print(f'Sistema Operacional: {platform.system()} {platform.version()}')
     print(f'Python: {platform.python_version()}')
     print(f'Diretório Atual: {os.getcwd()}')
-    
+
     # Verificar pasta uploads
     uploads_dir = Path('uploads')
     if uploads_dir.exists():
         print(f'Diretório uploads: ✅ Encontrado ({len(list(uploads_dir.iterdir()))} arquivos)')
     else:
         print('Diretório uploads: ❌ Não encontrado')
-    
+
     return True
 
 
 def check_dependencies():
     """Verifica as dependências principais."""
     print_section('DEPENDÊNCIAS')
-    
+
     dependencies = [
         'flask',
         'cloudinary',
@@ -101,7 +106,7 @@ def check_dependencies():
         'pytest',
         'flake8',
     ]
-    
+
     all_ok = True
     for dep in dependencies:
         try:
@@ -113,30 +118,67 @@ def check_dependencies():
         except Exception as e:
             print(f'{dep}: ⚠️ Erro ao verificar ({e})')
             all_ok = False
-    
+
     return all_ok
+
+
+def check_tests():
+    """Verifica o status dos testes na configuração atual."""
+    print_section('TESTES')
+
+    try:
+        # Verificar se estamos no ambiente de homologação
+        from tests.conftest import detect_homologation_environment
+
+        is_homologation = detect_homologation_environment()
+        status = '✅ Sim' if is_homologation else '❌ Não'
+        print(f'Ambiente de homologação detectado: {status}')
+
+        if is_homologation:
+            print('\nTestes do Cloudinary serão ignorados neste ambiente.')
+            print('Para executar testes sem o Cloudinary, use:')
+            print('  pytest -v')
+            print('\nPara ver quais testes serão ignorados:')
+            print('  pytest --collect-only -m cloudinary')
+        else:
+            print('\nTestes do Cloudinary serão executados normalmente.')
+            print('Para testar especificamente os testes do Cloudinary:')
+            print('  pytest -v -m cloudinary')
+
+        return True
+    except ImportError:
+        print('❌ Não foi possível importar os módulos de teste')
+        print(
+            'Certifique-se de que o pytest está instalado e que os módulos de teste '
+            'estão no PYTHONPATH'
+        )
+        return False
+    except Exception as e:
+        print(f'❌ Erro ao verificar os testes: {e}')
+        return False
 
 
 def main():
     """Função principal para executar as verificações."""
     print_section('DIAGNÓSTICO DO AMBIENTE DE HOMOLOGAÇÃO')
-    
+
     checks = [
         ('Sistema', check_system_info()),
         ('Arquivos de Ambiente', check_env_files()),
         ('Variáveis de Ambiente', check_environment_variables()),
         ('Dependências', check_dependencies()),
+        ('Testes', check_tests()),
     ]
-    
+
     print_section('RESUMO')
-    
+
     all_ok = True
     for name, result in checks:
         status = '✅ OK' if result else '❌ Problemas encontrados'
         print(f'{name}: {status}')
         if not result:
             all_ok = False
-    
+
     if all_ok:
         print('\n✅ O ambiente de homologação parece estar configurado corretamente!')
     else:
@@ -144,9 +186,9 @@ def main():
             '\n⚠️ Alguns problemas foram encontrados. '
             'Verifique as seções acima para mais detalhes.'
         )
-    
+
     return 0 if all_ok else 1
 
 
 if __name__ == '__main__':
-    sys.exit(main()) 
+    sys.exit(main())
